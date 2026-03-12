@@ -38,3 +38,12 @@ class UVResponse(BaseModel):
     peak_uv: float | None = None
 
     model_config = {"from_attributes": True}
+
+
+class UVHistoryResponse(BaseModel):
+    region: str
+    year: int
+    month: int
+    uv_index: float
+
+    model_config = {"from_attributes": True}

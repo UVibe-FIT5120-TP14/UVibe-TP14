@@ -22,3 +22,13 @@ class UVReading(Base):
     location_name = Column(String, nullable=True)
     uv_index = Column(Float, nullable=False)
     recorded_at = Column(DateTime, default=datetime.utcnow)
+
+
+class UVHistory(Base):
+    __tablename__ = "uv_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    region = Column(String, index=True, nullable=False)
+    year = Column(Integer, index=True, nullable=False)
+    month = Column(Integer, index=True, nullable=False)
+    uv_index = Column(Float, nullable=False)

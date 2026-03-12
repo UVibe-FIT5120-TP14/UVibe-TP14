@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 import jwt
 
 from database import engine, get_db
-from models import Base, User, UVReading
-from schemas import LoginRequest, RegisterRequest, TokenResponse, UserProfile, UVResponse
+from models import Base, User, UVReading, UVHistory
+from schemas import LoginRequest, RegisterRequest, TokenResponse, UserProfile, UVResponse, UVHistoryResponse
 from auth import verify_password, get_password_hash, create_access_token, decode_access_token
 from seed import seed
 import uv_service
@@ -141,3 +141,13 @@ async def get_uv(
         peak_window=uv_data["peak_window"],
         peak_uv=uv_data["peak_uv"],
     )
+
+
+@app.get("/api/uv/history", response_model=list[UVHistoryResponse])
+def get_uv_history(db: Session = Depends(get_db)):
+    # Simply fetch all historical data
+    # We could allow filtering by year/month but since it's only ~768 rows
+    # (8 regions * 8 years * 12 months), we can send it all to the frontend
+    # and let the frontend do the filtering for instantaneous sliding.
+    history = db.query(UVHistory).all()
+    return history
