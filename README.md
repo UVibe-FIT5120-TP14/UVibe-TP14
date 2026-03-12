@@ -1,5 +1,35 @@
 # UVibe
 
+## Git Workflow
+
+```bash
+# Start of every work session
+git pull origin main          # get latest from teammates
+
+# ... make your changes ...
+
+git add .
+git commit -m "what you changed"
+git push origin main          # send your changes up
+```
+
+Pull before you start, push when you're done.
+
+If a teammate pushed while you were working, git will merge their changes with yours automatically. If you both edited the same file in the same place, git will flag a conflict and ask you to resolve it.
+
+Each person should work on their own branch:
+
+```bash
+git checkout -b your-name/feature-name    # create your branch
+# ... do work ...
+git push origin your-name/feature-name
+# then open a Pull Request on GitHub to merge into main
+```
+
+That way `main` stays stable and nothing breaks for teammates mid-work.
+
+---
+
 A mobile-first UV index tracker that gives you real-time UV conditions, today's peak window, and sunset time — all based on your current location.
 
 Built with **FastAPI** (Python) + **Nuxt 4** (Vue 3).
