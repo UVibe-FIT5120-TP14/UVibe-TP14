@@ -245,6 +245,6 @@ test_auth.py::test_profile_with_valid_token  PASSED
 ## Deployment Notes
 
 - **Backend** — deploys to [Render](https://render.com) as a Python web service. Set all env vars in the Render dashboard. `DATABASE_URL` will be your Render PostgreSQL connection string.
-- **Frontend** — deploys to Vercel or Netlify. Set `NUXT_PUBLIC_API_BASE` to your Render backend URL.
+- **Frontend** — deploys to Vercel. Set `NUXT_PUBLIC_API_BASE` to your Render backend URL.
 - **CORS** — add your frontend's production URL to `ALLOWED_ORIGINS` in Render env vars (comma-separated if multiple).
 - **Secret key** — generate a fresh one for production: `python -c "import secrets; print(secrets.token_hex(32))"`
