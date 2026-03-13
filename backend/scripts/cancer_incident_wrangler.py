@@ -39,7 +39,7 @@ import openpyxl
 from sqlalchemy.orm import Session
 
 from database import SessionLocal, engine
-from models import Base, StateCancerIncident, AgeCancerIncidents 
+from models import Base, StateCancerIncident, AgeCancerIncident
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -164,7 +164,7 @@ def _wrangle(cfg: WranglerConfig, data_dir: str, db: Session) -> int:
             cancer_type=cancer_type,
             year=year,
             sex=sex,
-            dimension=dimension,
+            dimension=dimension.replace("–", "-"),
             count=count,
         ))
 
@@ -204,8 +204,8 @@ def _age_config() -> WranglerConfig:
         valid_data_type="Actual",
         dimension_col=4,
         exclude_dimension={"all ages combined"},
-        model_class=AgeCancerIncidents,
-        model_factory=lambda cancer_type, year, sex, dimension, count: AgeCancerIncidents(
+        model_class=AgeCancerIncident,
+        model_factory=lambda cancer_type, year, sex, dimension, count: AgeCancerIncident(
             cancer_type=cancer_type,
             year=year,
             sex=sex,
