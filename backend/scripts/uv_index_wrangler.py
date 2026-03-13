@@ -1,49 +1,19 @@
+import tempfile
 import os
 import csv
-import zipfile
-import requests
-import tempfile
 from datetime import datetime
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
-from dotenv import load_dotenv
 from models import Base, UVHistory
-
-load_dotenv()
-DATA_URL = os.environ.get("UV_DATA_URL")
-if not DATA_URL:
-    raise EnvironmentError("UV_DATA_URL environment variable is not set.")
-
-def download_and_extract(url: str, extract_to: str):
-    print("Downloading UV history data...")
-    response = requests.get(url, stream=True)
-    response.raise_for_status()
-
-    with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_file:
-        for chunk in response.iter_content(chunk_size=8192):
-            tmp_file.write(chunk)
-        tmp_path = tmp_file.name
-
-    print(f"Extracting to {extract_to}...")
-    with zipfile.ZipFile(tmp_path, 'r') as zip_ref:
-        zip_ref.extractall(extract_to)
-
-    os.unlink(tmp_path)
-    print("Download and extraction complete.")
+from scripts.downloader import download_and_extract
 
 
-def wrangle_uv_history():
+def wrangle_uv_history(base_dir: str):
     Base.metadata.create_all(bind=engine)
     db: Session = SessionLocal()
 
     db.query(UVHistory).delete()
     db.commit()
-
-    # Download and extract into a temp directory
-    tmp_dir = tempfile.mkdtemp()
-    download_and_extract(DATA_URL, tmp_dir)
-
-    base_dir = os.path.join(tmp_dir, "uv_history")
     
     if not os.path.exists(base_dir):
         print(f"Data directory {base_dir} not found. Skipping wrangling.")
@@ -54,7 +24,7 @@ def wrangle_uv_history():
     total_records = 0
     
     for region in regions:
-        region_dir = os.path.join(base_dir, region)
+        region_dir = os.path.join(base_dir, "uv_history", region)
         if not os.path.exists(region_dir):
             print(f"Directory for region {region} not found in {region_dir}. Skipping.")
             continue
@@ -124,7 +94,3 @@ def wrangle_uv_history():
     db.commit()
     db.close()
     print("Done wrangling UV history.")
-
-
-if __name__ == "__main__":
-    wrangle_uv_history()
