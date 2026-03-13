@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import UVInsights from '~/components/UVInsights.vue'
+import UVInsights from '~/components/UVInsights/UVInsights.vue'
 
 definePageMeta({ middleware: ['auth'] })
 
 const { history, loading: uvLoading, error: uvError } = useUVHistory()
-const { stateCancer } = useStateCancerData()  // loads async; UVInsights uses mock until it arrives
+
 </script>
 
 <template>
@@ -29,7 +29,7 @@ const { stateCancer } = useStateCancerData()  // loads async; UVInsights uses mo
       </div>
 
       <!-- Insights — cancer data streams in reactively when the fetch completes -->
-      <UVInsights v-else :data="history" :cancer-data="stateCancer" />
+      <UVInsights v-else :data="history" />
 
     </main>
 
