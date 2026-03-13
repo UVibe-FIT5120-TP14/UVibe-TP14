@@ -1118,6 +1118,22 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
       </div>
     </Transition>
   </div>
+
+  <div class="col-span-5 flex flex-col justify-between">
+    <div class="space-y-4">
+    </div>
+    <div class="mt-auto pt-4 flex flex-col gap-1 border-t border-white/[0.05]">
+        <div class="flex items-center justify-between text-[10px] tracking-wider uppercase font-bold text-gray-600">
+            <span>Data Attribution</span>
+            <span class="text-[9px] font-normal lowercase opacity-50 italic">v1.0.4-stable</span>
+        </div>
+        <p class="text-[10px] leading-relaxed text-gray-500">
+          UV Index data sourced from <a href="https://data.gov.au/data/organization/australian-radiation-protection-and-nuclear-safety-agency-arpansa" target="_blank" class="text-blue-400/60 hover:text-blue-400 underline decoration-dotted">data.gov.au</a>. 
+          Cancer statistics provided by <a href="https://www.aihw.gov.au/reports/cancer/cancer-data-in-australia/contents/cancer-data-commentaries/risk-of-melanoma" target="_blank" class="text-blue-400/60 hover:text-blue-400 underline decoration-dotted">AIHW</a>. 
+          Distributed under <span class="text-gray-400">CC BY 4.0</span> license.
+        </p>
+    </div>
+  </div>
 </template>
 
 <style scoped>
