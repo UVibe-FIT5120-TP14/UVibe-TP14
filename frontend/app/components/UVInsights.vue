@@ -289,6 +289,7 @@ const hoveredInfo = computed(() => {
   const uv   = currentUV.value[id]
   const rate = getCancerRate(id)
   const count = currentStateCancer.value[id]
+  const population = STATE_POP[id]
   const [mr, mg, mb] = interpColor(UV_STOPS, uv ?? 0)
   return {
     id, name: feat.name,
@@ -300,6 +301,7 @@ const hoveredInfo = computed(() => {
     tagline: STATE_TAGLINES[id] ?? '',
     glow: `rgba(${mr},${mg},${mb},0.5)`,
     selIdx: selectedStates.value.indexOf(id),
+    population: population,
   }
 })
 
@@ -681,14 +683,6 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
                 font-family="'Courier New',Courier,monospace"
                 :style="{ opacity: stateOpacity(feat.id), transition: 'opacity 0.25s ease' }"
               >{{ feat.id }}</text>
-              <text v-if="feat.id !== 'ACT' && currentUV[feat.id] !== undefined"
-                :x="feat.labelX" :y="feat.labelY + 9"
-                text-anchor="middle" dominant-baseline="middle"
-                fill="rgba(255,255,255,0.45)"
-                :font-size="(LABEL_FONT[feat.id] ?? 10) - 1"
-                font-family="'Courier New',Courier,monospace"
-                :style="{ transition: 'all 0.55s ease' }"
-              >{{ currentUV[feat.id]?.toFixed(1) }}</text>
             </g>
 
             <!-- ── Embedded UV vertical legend and cancer bubble size ── -->
@@ -1108,6 +1102,14 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
             <span class="text-lg font-black text-white leading-none">{{ hoveredInfo.rate?.toFixed(0) ?? '—' }}</span>
             <span class="text-xs text-gray-500">/100k</span>
             <span class="text-xs font-bold uppercase text-cyan-400">{{ hoveredInfo.rateLabel }}</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs text-gray-500 uppercase tracking-widest">Estimated Population</span>
+          <div class="flex items-center gap-1.5">
+              <span class="text-lg font-black text-white leading-none">{{ hoveredInfo.population?.toLocaleString() ?? '—' }}</span>
+              <span class="text-xs text-gray-500">people</span>
           </div>
         </div>
 
