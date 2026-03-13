@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { geoMercator, geoPath, geoCentroid } from 'd3-geo'
-import type { StateCancerRecord } from '~/composables/useCancerData'
+import { useAgeCancerData } from '~/composables/useAgeCancerData'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface UVHistoryResponse {
   region: string; year: number; month: number; uv_index: number
+}
+
+interface StateCancerRecord {
+  state: string; year: number; count: number
 }
 
 const props = defineProps<{
@@ -346,6 +350,172 @@ const UV_TICKS = [
   { v: 0,  l: '0',  label: ''          },
 ]
 function uvTickY(v: number) { return ((15 - v) / 15) * LEGEND_H_VERT }
+
+// ─── Age-group line chart (Panel 2) ──────────────────────────────────────────
+
+const { ageCancer } = useAgeCancerData()
+
+const AGE_GROUPS = [
+  { key: 'children', label: 'Children 0–14',   ages: ['00-04','05-09','10-14'],                                       color: '#10b981', rgba: 'rgba(16,185,129,0.18)'  },
+  { key: 'young',    label: 'Young 15–29',      ages: ['15-19','20-24','25-29'],                                       color: '#38bdf8', rgba: 'rgba(56,189,248,0.18)'  },
+  { key: 'adults',   label: 'Adults 30–59',     ages: ['30-34','35-39','40-44','45-49','50-54','55-59'],               color: '#f59e0b', rgba: 'rgba(245,158,11,0.18)'  },
+  { key: 'older',    label: 'Older 60–79',      ages: ['60-64','65-69','70-74','75-79'],                               color: '#f97316', rgba: 'rgba(249,115,22,0.18)'  },
+  { key: 'elderly',  label: 'Elderly 80+',      ages: ['80-84','85-89','90+'],                                         color: '#f43f5e', rgba: 'rgba(244,63,94,0.18)'   },
+] as const
+
+type AgeGroupKey = typeof AGE_GROUPS[number]['key']
+
+// Array-based (not Set) so Vue reactivity tracks it correctly
+const hiddenGroups = ref<AgeGroupKey[]>([])
+function toggleGroup(key: AgeGroupKey) {
+  const i = hiddenGroups.value.indexOf(key)
+  hiddenGroups.value = i !== -1
+    ? hiddenGroups.value.filter(k => k !== key)
+    : [...hiddenGroups.value, key]
+}
+
+const CHART_YEARS = [2016, 2017, 2018, 2019]
+
+// ── Mock data (used until real API data arrives) ──────────────────────────────
+function seededNoise(s: number) { return (Math.sin(s * 127.1 + 311.7) * 43758.5453) % 1 }
+
+// The mock emits the GROUP KEY as age_group (not raw DB strings) so the
+// aggregation below can do a direct key lookup without a string-search loop.
+function generateMockAgeCancer() {
+  // Base annual counts per age GROUP (both sexes + both cancer types combined) for 2016
+  const BASES: Record<AgeGroupKey, number> = {
+    children: 27,    // 0–14
+    young:    488,   // 15–29
+    adults:   8040,  // 30–59
+    older:    9940,  // 60–79
+    elderly:  3150,  // 80+
+  }
+  const rows: { year: number; age_group: string; count: number }[] = []
+  for (const [key, base] of Object.entries(BASES) as [AgeGroupKey, number][]) {
+    for (let yr = 2016; yr <= 2019; yr++) {
+      const growth = 1 + (yr - 2016) * 0.022
+      const noise  = 1 + (seededNoise(yr * 97 + key.charCodeAt(0) * 13) - 0.5) * 0.06
+      rows.push({ year: yr, age_group: key, count: Math.round(base * growth * noise) })
+    }
+  }
+  return rows
+}
+
+// Build age→group mapping for real API data (DB age_group strings → group key)
+const AGE_TO_GROUP: Record<string, AgeGroupKey> = {}
+for (const grp of AGE_GROUPS)
+  for (const age of grp.ages)
+    AGE_TO_GROUP[age] = grp.key
+
+// Aggregated { year → { groupKey → totalCount } }
+const ageAnnualData = computed<Record<number, Record<AgeGroupKey, number>>>(() => {
+  const isMock = !ageCancer.value?.length
+  const records = isMock ? generateMockAgeCancer() : ageCancer.value
+
+  const map: Record<number, Record<string, number>> = {}
+  CHART_YEARS.forEach(yr => {
+    map[yr] = { children: 0, young: 0, adults: 0, older: 0, elderly: 0 }
+  })
+
+  records.forEach(d => {
+    const yr = Number(d.year)    // coerce — APIs sometimes return strings
+    if (!CHART_YEARS.includes(yr)) return
+
+    // Mock data already uses the group key directly; real API data uses raw age strings
+    const groupKey: AgeGroupKey | undefined = isMock
+      ? (d.age_group as AgeGroupKey)
+      : AGE_TO_GROUP[d.age_group]
+
+    if (!groupKey) return
+    map[yr][groupKey] = (map[yr][groupKey] ?? 0) + d.count
+  })
+
+  return map as Record<number, Record<AgeGroupKey, number>>
+})
+
+// ── SVG chart geometry ────────────────────────────────────────────────────────
+// Fixed viewBox — scales fluidly with the container width
+const CW = 460, CH = 255
+const PAD = { l: 50, r: 14, t: 14, b: 38 }
+const plotW = CW - PAD.l - PAD.r   // 396
+const plotH = CH - PAD.t - PAD.b   // 203
+
+const chartMax = computed(() => {
+  let max = 0
+  for (const yr of CHART_YEARS)
+    for (const grp of AGE_GROUPS) {
+      const v = ageAnnualData.value[yr]?.[grp.key] ?? 0
+      if (v > max) max = v
+    }
+  return max || 1
+})
+
+function xPos(i: number) { return PAD.l + (i / (CHART_YEARS.length - 1)) * plotW }
+function yPos(v: number) { return PAD.t + plotH - (v / chartMax.value) * plotH }
+
+function groupPoints(key: AgeGroupKey) {
+  return CHART_YEARS.map((yr, i) => ({
+    x: xPos(i), y: yPos(ageAnnualData.value[yr]?.[key] ?? 0),
+    val: ageAnnualData.value[yr]?.[key] ?? 0, yr,
+  }))
+}
+function polyline(key: AgeGroupKey) {
+  return groupPoints(key).map(p => `${p.x},${p.y}`).join(' ')
+}
+function areaPath(key: AgeGroupKey) {
+  const pts = groupPoints(key)
+  const top = pts.map(p => `${p.x},${p.y}`).join(' L ')
+  const base = `L ${pts[pts.length-1].x},${PAD.t + plotH} L ${pts[0].x},${PAD.t + plotH} Z`
+  return `M ${top} ${base}`
+}
+
+// Y-axis ticks — ~4 evenly spaced, rounded to nearest 1 k
+const yTicks = computed(() => {
+  const max = chartMax.value
+  const raw = max / 4
+  const step = Math.ceil(raw / 1000) * 1000 || 500
+  const ticks: number[] = []
+  for (let v = 0; v <= max + step * 0.5; v += step) ticks.push(v)
+  return ticks
+})
+
+// ── Chart hover crosshair ─────────────────────────────────────────────────────
+const chartHoveredIdx = ref<number | null>(null)
+const chartHoveredYear = computed(() =>
+  chartHoveredIdx.value !== null ? CHART_YEARS[chartHoveredIdx.value] : null
+)
+
+function onChartMouseMove(e: MouseEvent) {
+  const svg = e.currentTarget as SVGSVGElement
+  const rect = svg.getBoundingClientRect()
+  const relX = ((e.clientX - rect.left) / rect.width) * CW
+  let closest = 0, minDist = Infinity
+  CHART_YEARS.forEach((_, i) => {
+    const d = Math.abs(relX - xPos(i))
+    if (d < minDist) { minDist = d; closest = i }
+  })
+  chartHoveredIdx.value = closest
+}
+function onChartMouseLeave() { chartHoveredIdx.value = null }
+
+// ── Draw-on animation (left-to-right reveal via clip rect) ───────────────────
+const chartDrawProgress = ref(0)
+let animFrame: number | null = null
+
+function startChartAnimation() {
+  chartDrawProgress.value = 0
+  const start = performance.now()
+  const duration = 1300
+  function step(now: number) {
+    const t = Math.min((now - start) / duration, 1)
+    chartDrawProgress.value = 1 - Math.pow(1 - t, 3)   // cubic ease-out
+    if (t < 1) animFrame = requestAnimationFrame(step)
+  }
+  animFrame = requestAnimationFrame(step)
+}
+
+onMounted(() => { setTimeout(startChartAnimation, 350) })
+onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
 </script>
 
 <template>
@@ -593,44 +763,213 @@ function uvTickY(v: number) { return ((15 - v) / 15) * LEGEND_H_VERT }
       <!-- Vertical divider (desktop only) -->
       <div class="hidden md:block w-px bg-white/[0.05] self-stretch"/>
 
-      <!-- ═══ Panel 2: Cancer trends placeholder ═════════════════════════════ -->
+      <!-- ═══ Panel 2: Cancer trends by age group ═══════════════════════════ -->
       <div class="w-full md:flex-1 flex flex-col gap-1 md:pl-3 md:min-w-0 mt-4 md:mt-0">
-        <p class="text-[9px] text-gray-600 tracking-widest uppercase pb-1 border-b border-white/[0.04]">
-          Skin Cancer · Incidence &amp; Mortality
-        </p>
-        <div class="flex-1 flex flex-col items-center justify-center gap-4 rounded-xl mt-1"
-          style="min-height:280px;background:rgba(255,255,255,0.012);border:1px dashed rgba(255,255,255,0.06);">
-          <div class="w-12 h-12 rounded-2xl flex items-center justify-center"
-            style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.13);">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
-              stroke="rgba(59,130,246,0.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          </div>
-          <div class="text-center px-6">
-            <p class="text-xs font-bold tracking-widest uppercase text-gray-500 mb-1.5">Coming Soon</p>
-            <p class="text-[10px] text-gray-700 leading-relaxed">
-              Trend lines for cancer incident counts and deaths per region will appear here.
-            </p>
-          </div>
-          <!-- Ghost skeleton -->
-          <div class="w-full px-5 mt-1" aria-hidden="true">
-            <div class="flex gap-3 mb-2 justify-center">
-              <div class="flex items-center gap-1.5"><div class="w-5 h-0.5 rounded-full bg-blue-900"/><span class="text-[8px] text-gray-800">Incidents</span></div>
-              <div class="flex items-center gap-1.5"><div class="w-5 h-0.5 rounded-full bg-red-900"/><span class="text-[8px] text-gray-800">Deaths</span></div>
-            </div>
-            <div class="flex items-end gap-[3px] h-16">
-              <div v-for="(p, i) in [[40,18],[52,22],[48,20],[63,27],[55,23],[71,30],[60,26],[78,33],[65,28],[82,35],[70,30],[74,32]]"
-                :key="i" class="flex-1 flex flex-col-reverse items-center gap-[2px]">
-                <div class="w-full rounded-sm" :style="{ height:`${p[0]}%`, background:'rgba(59,130,246,0.1)' }"/>
-                <div class="w-full rounded-sm" :style="{ height:`${p[1]}%`, background:'rgba(239,68,68,0.08)' }"/>
+
+        <!-- Panel header -->
+        <div class="flex items-center justify-between pb-1 border-b border-white/[0.04]">
+          <p class="text-[9px] text-gray-600 tracking-widest uppercase">Skin Cancer · Incidents by Age Group</p>
+          <p class="text-[9px] text-gray-700 tracking-wider">2016 – 2019</p>
+        </div>
+
+        <!-- Clickable legend toggles -->
+        <div class="flex flex-wrap gap-1.5 pt-2 pb-1">
+          <button
+            v-for="grp in AGE_GROUPS" :key="grp.key"
+            class="flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all duration-200"
+            :style="{
+              background: hiddenGroups.includes(grp.key) ? 'rgba(255,255,255,0.03)' : grp.rgba,
+              border: `1px solid ${hiddenGroups.includes(grp.key) ? 'rgba(255,255,255,0.06)' : grp.color + '55'}`,
+              color: hiddenGroups.includes(grp.key) ? '#4b5563' : grp.color,
+              opacity: hiddenGroups.includes(grp.key) ? 0.45 : 1,
+            }"
+            @click="toggleGroup(grp.key)"
+          >
+            <div class="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors duration-200"
+              :style="{ background: hiddenGroups.includes(grp.key) ? '#4b5563' : grp.color }" />
+            {{ grp.label }}
+          </button>
+        </div>
+
+        <!-- SVG Line Chart -->
+        <div class="flex-1 relative" style="min-height: 215px;">
+          <svg
+            :viewBox="`0 0 ${CW} ${CH}`"
+            class="w-full h-full"
+            style="overflow:visible"
+            @mousemove="onChartMouseMove"
+            @mouseleave="onChartMouseLeave"
+          >
+            <defs>
+              <!-- Glow filter for lines -->
+              <filter id="lineGlow" x="-20%" y="-30%" width="140%" height="160%">
+                <feGaussianBlur stdDeviation="2.5" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <!-- Left-to-right draw-on clip -->
+              <clipPath id="chartReveal">
+                <rect :x="PAD.l" :y="0" :width="chartDrawProgress * plotW" :height="CH" />
+              </clipPath>
+            </defs>
+
+            <!-- Background tint -->
+            <rect :x="PAD.l" :y="PAD.t" :width="plotW" :height="plotH"
+              fill="rgba(255,255,255,0.012)" rx="2"/>
+
+            <!-- Horizontal grid lines + Y labels -->
+            <g v-for="tick in yTicks" :key="`g-${tick}`">
+              <line :x1="PAD.l" :x2="PAD.l + plotW" :y1="yPos(tick)" :y2="yPos(tick)"
+                stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+              <text :x="PAD.l - 6" :y="yPos(tick)"
+                text-anchor="end" dominant-baseline="middle"
+                fill="rgba(255,255,255,0.22)" font-size="8.5" font-family="monospace">
+                {{ tick >= 1000 ? `${(tick/1000).toFixed(tick%1000===0?0:1)}k` : tick }}
+              </text>
+            </g>
+
+            <!-- Area fills under each line (clipped for draw-on) -->
+            <g clip-path="url(#chartReveal)">
+              <path
+                v-for="grp in AGE_GROUPS" :key="`area-${grp.key}`"
+                :d="areaPath(grp.key)"
+                :fill="grp.color"
+                fill-opacity="0.07"
+                :style="{
+                  opacity: hiddenGroups.includes(grp.key) ? 0 : 1,
+                  transition: 'opacity 0.35s ease',
+                }"
+              />
+            </g>
+
+            <!-- Lines (clipped for draw-on animation) -->
+            <g clip-path="url(#chartReveal)">
+              <polyline
+                v-for="(grp, gi) in AGE_GROUPS" :key="`line-${grp.key}`"
+                :points="polyline(grp.key)"
+                fill="none"
+                :stroke="grp.color"
+                :stroke-width="chartHoveredYear !== null && !hiddenGroups.includes(grp.key) ? 2.8 : 1.8"
+                stroke-linecap="round" stroke-linejoin="round"
+                filter="url(#lineGlow)"
+                :style="{
+                  opacity: hiddenGroups.includes(grp.key) ? 0
+                    : chartHoveredYear !== null ? 0.35 : 1,
+                  transition: `opacity 0.25s ease ${gi * 60}ms, stroke-width 0.15s ease`,
+                }"
+              />
+            </g>
+
+            <!-- Hover: highlighted lines on top (full opacity) -->
+            <template v-if="chartHoveredYear !== null">
+              <polyline
+                v-for="grp in AGE_GROUPS" :key="`hl-${grp.key}`"
+                :points="polyline(grp.key)"
+                fill="none"
+                :stroke="grp.color"
+                stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round"
+                clip-path="url(#chartReveal)"
+                :style="{
+                  opacity: hiddenGroups.includes(grp.key) ? 0 : 1,
+                  transition: 'opacity 0.15s ease',
+                }"
+              />
+            </template>
+
+            <!-- Static small dots at every data point -->
+            <template v-for="grp in AGE_GROUPS" :key="`dots-${grp.key}`">
+              <circle
+                v-for="(yr, i) in CHART_YEARS" :key="`dp-${yr}`"
+                :cx="xPos(i)"
+                :cy="yPos(ageAnnualData[yr]?.[grp.key] ?? 0)"
+                r="2.5"
+                :fill="grp.color"
+                :style="{
+                  opacity: hiddenGroups.includes(grp.key) ? 0
+                    : chartHoveredYear === yr ? 0 : 0.65,
+                  transition: 'opacity 0.2s ease',
+                }"
+              />
+            </template>
+
+            <!-- Hover crosshair + enlarged dots -->
+            <template v-if="chartHoveredYear !== null && chartHoveredIdx !== null">
+              <!-- Vertical rule -->
+              <line
+                :x1="xPos(chartHoveredIdx)" :x2="xPos(chartHoveredIdx)"
+                :y1="PAD.t" :y2="PAD.t + plotH"
+                stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="4 3"
+              />
+              <!-- Dot outer ring + inner fill per visible group -->
+              <template v-for="grp in AGE_GROUPS" :key="`hd-${grp.key}`">
+                <template v-if="!hiddenGroups.includes(grp.key)">
+                  <circle
+                    :cx="xPos(chartHoveredIdx)"
+                    :cy="yPos(ageAnnualData[chartHoveredYear]?.[grp.key] ?? 0)"
+                    r="7" :fill="grp.color" fill-opacity="0.15"
+                    :stroke="grp.color" stroke-width="1.5" stroke-opacity="0.5"
+                  />
+                  <circle
+                    :cx="xPos(chartHoveredIdx)"
+                    :cy="yPos(ageAnnualData[chartHoveredYear]?.[grp.key] ?? 0)"
+                    r="3" :fill="grp.color"
+                  />
+                </template>
+              </template>
+            </template>
+
+            <!-- Axes -->
+            <line :x1="PAD.l" :x2="PAD.l + plotW" :y1="PAD.t + plotH" :y2="PAD.t + plotH"
+              stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+            <line :x1="PAD.l" :x2="PAD.l" :y1="PAD.t" :y2="PAD.t + plotH"
+              stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+            <!-- X axis year labels -->
+            <text
+              v-for="(yr, i) in CHART_YEARS" :key="`xl-${yr}`"
+              :x="xPos(i)" :y="PAD.t + plotH + 16"
+              text-anchor="middle"
+              :fill="chartHoveredYear === yr ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.28)'"
+              :font-size="chartHoveredYear === yr ? 10 : 9"
+              :font-weight="chartHoveredYear === yr ? '700' : '400'"
+              font-family="monospace"
+              style="transition: fill 0.15s ease, font-size 0.15s ease;"
+            >{{ yr }}</text>
+
+            <!-- X axis ticks -->
+            <line
+              v-for="(_, i) in CHART_YEARS" :key="`xt-${i}`"
+              :x1="xPos(i)" :x2="xPos(i)"
+              :y1="PAD.t + plotH" :y2="PAD.t + plotH + 4"
+              stroke="rgba(255,255,255,0.12)" stroke-width="1"
+            />
+          </svg>
+
+          <!-- Floating tooltip (top-right of chart area, year-snapped) -->
+          <Transition name="tip">
+            <div
+              v-if="chartHoveredYear !== null"
+              class="absolute top-2 right-0 rounded-xl px-3 py-2.5 pointer-events-none z-20"
+              style="background:rgba(6,13,27,0.97);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.07);min-width:158px;"
+            >
+              <p class="text-[11px] font-black text-blue-300 tracking-widest mb-2">{{ chartHoveredYear }}</p>
+              <div
+                v-for="grp in [...AGE_GROUPS]
+                  .filter(g => !hiddenGroups.includes(g.key))
+                  .sort((a,b) => (ageAnnualData[chartHoveredYear]?.[b.key] ?? 0) - (ageAnnualData[chartHoveredYear]?.[a.key] ?? 0))"
+                :key="`tt-${grp.key}`"
+                class="flex items-center justify-between gap-3 mb-1 last:mb-0"
+              >
+                <div class="flex items-center gap-1.5">
+                  <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" :style="{ background: grp.color }"/>
+                  <span class="text-[9px] text-gray-500">{{ grp.label }}</span>
+                </div>
+                <span class="text-[10px] font-bold tabular-nums" :style="{ color: grp.color }">
+                  {{ (ageAnnualData[chartHoveredYear]?.[grp.key] ?? 0).toLocaleString() }}
+                </span>
               </div>
             </div>
-            <div class="h-px w-full bg-white/[0.05] mt-1 mb-1.5"/>
-            <div class="flex justify-between">
-              <span v-for="yr in ['2015','2017','2019','2021','2023','2025']" :key="yr" class="text-[7px] text-gray-800">{{ yr }}</span>
-            </div>
-          </div>
+          </Transition>
         </div>
       </div>
     </div>
@@ -809,6 +1148,25 @@ function uvTickY(v: number) { return ((15 - v) / 15) * LEGEND_H_VERT }
 /* ── Selection ring pulse ────────────────────────────────────────────────────── */
 @keyframes ringPulse { 0%, 100% { stroke-opacity: 0.9; } 50% { stroke-opacity: 0.25; } }
 .ring-pulse { animation: ringPulse 2.2s ease-in-out infinite; }
+
+/* ── Unified year slider ─────────────────────────────────────────────────────── */
+.unified-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 5px; border-radius: 3px; outline: none; cursor: pointer;
+  background: linear-gradient(to right, rgba(59,130,246,0.4), rgba(147,197,253,0.9));
+}
+.unified-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 20px; height: 20px; border-radius: 50%; background: #fff;
+  border: 3px solid rgb(147,197,253);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.2), 0 0 16px rgba(59,130,246,0.6), 0 2px 5px rgba(0,0,0,0.5);
+  cursor: pointer; transition: transform 0.15s ease;
+}
+.unified-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.unified-slider::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%; background: #fff;
+  border: 3px solid rgb(147,197,253); box-shadow: 0 0 14px rgba(59,130,246,0.6); cursor: pointer;
+}
 
 /* ── Transitions ─────────────────────────────────────────────────────────────── */
 .tip-enter-active, .tip-leave-active { transition: opacity 0.12s ease, transform 0.12s ease; }

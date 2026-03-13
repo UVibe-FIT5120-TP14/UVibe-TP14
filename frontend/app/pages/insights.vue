@@ -4,7 +4,7 @@ import UVInsights from '~/components/UVInsights.vue'
 definePageMeta({ middleware: ['auth'] })
 
 const { history, loading: uvLoading, error: uvError } = useUVHistory()
-const { stateCancer } = useCancerData()  // loads async; UVInsights uses mock until it arrives
+const { stateCancer } = useStateCancerData()  // loads async; UVInsights uses mock until it arrives
 </script>
 
 <template>
