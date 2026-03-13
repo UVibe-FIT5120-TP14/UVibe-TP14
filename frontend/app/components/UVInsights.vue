@@ -74,25 +74,6 @@ const cancerLookup = computed(() => {
   return map
 })
 
-// Annual average UV per region per year (across all 12 months)
-const uvAnnualLookup = computed(() => {
-  const sums: Record<number, Record<string, { sum: number; n: number }>> = {}
-  allUV.value.forEach(d => {
-    if (!sums[d.year]) sums[d.year] = {}
-    if (!sums[d.year][d.region]) sums[d.year][d.region] = { sum: 0, n: 0 }
-    sums[d.year][d.region].sum += d.uv_index
-    sums[d.year][d.region].n++
-  })
-  const avgs: Record<number, Record<string, number>> = {}
-  for (const [yr, regions] of Object.entries(sums)) {
-    avgs[Number(yr)] = {}
-    for (const [region, { sum, n }] of Object.entries(regions)) {
-      avgs[Number(yr)][region] = Math.round((sum / n) * 10) / 10
-    }
-  }
-  return avgs
-})
-
 // Max count within the unified year range — normalises bubble radii
 const currentMaxCancerCount = computed(() => {
   let max = 0
@@ -309,7 +290,6 @@ const hoveredInfo = computed(() => {
 
 const selectedStates = ref<string[]>([])
 const COMPARE_COLORS = ['#3B82F6', '#F59E0B']
-const COMPARE_GLOW   = ['rgba(59,130,246,0.7)', 'rgba(245,158,11,0.7)']
 
 function onStateClick(id: string) {
   const idx = selectedStates.value.indexOf(id)
@@ -351,7 +331,6 @@ const UV_TICKS = [
   { v: 3,  l: '3',  label: 'Low'       },
   { v: 0,  l: '0',  label: ''          },
 ]
-function uvTickY(v: number) { return ((15 - v) / 15) * LEGEND_H_VERT }
 
 // ─── Age-group line chart (Panel 2) ──────────────────────────────────────────
 
@@ -780,7 +759,8 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
           </div>
         </div>
 
-      </div><!-- end Panel 1 -->
+      </div>
+      <!-- end Panel 1 -->
 
       <!-- Vertical divider (desktop only) -->
       <div class="hidden md:block w-px bg-white/[0.05] self-stretch"/>
