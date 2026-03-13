@@ -268,7 +268,7 @@ function stateOpacity(id: string): number {
 
 // ─── Tooltip (Reality Card) ───────────────────────────────────────────────────
 
-const TOOLTIP_W = 216, TOOLTIP_H = 178, OFFSET = 16
+const TOOLTIP_W = 240, TOOLTIP_H = 200, OFFSET = 16
 
 const tooltipStyle = computed(() => {
   if (!containerRef.value) return {}
@@ -536,51 +536,16 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
       style="background-image: linear-gradient(rgba(59,130,246,1) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,1) 1px, transparent 1px); background-size: 40px 40px;" />
 
     <!-- ── Header ──────────────────────────────────────────────────────────── -->
-    <div class="relative px-4 pt-4 pb-3 flex items-center justify-between gap-3 flex-wrap">
-      <div class="flex items-center gap-3">
-        <div class="flex flex-col gap-[3px]">
-          <div class="h-0.5 w-6 rounded-full bg-blue-400" />
-          <div class="h-0.5 w-4 rounded-full bg-blue-600" />
-          <div class="h-0.5 w-5 rounded-full bg-blue-500" />
-        </div>
-        <div>
-          <h3 class="text-sm font-bold tracking-[0.18em] uppercase text-blue-300 leading-none">UV Insights</h3>
-          <p class="text-[10px] text-gray-600 tracking-widest uppercase mt-0.5">Historical · Australia</p>
-        </div>
+    <div class="relative px-5 pt-5 pb-3 flex items-center gap-3">
+      <div class="flex flex-col gap-[3px]">
+        <div class="h-0.5 w-6 rounded-full bg-blue-400" />
+        <div class="h-0.5 w-4 rounded-full bg-blue-600" />
+        <div class="h-0.5 w-5 rounded-full bg-blue-500" />
       </div>
-
-      <!-- Legend key (inline, always visible) -->
-      <div class="flex items-center gap-3 flex-wrap">
-        <!-- UV key -->
-        <div class="flex items-center gap-1.5">
-          <div class="w-16 h-2.5 rounded-full" style="background: linear-gradient(to right, rgb(34,197,94), rgb(234,179,8), rgb(249,115,22), rgb(239,68,68), rgb(168,85,247))" />
-          <span class="text-[9px] text-gray-500 uppercase tracking-wider">UV Index</span>
-        </div>
-        <!-- Cancer bubble key -->
-        <div class="flex items-center gap-1.5">
-          <div class="flex items-center gap-0.5">
-            <div class="rounded-full border border-cyan-400/70 bg-cyan-400/10" style="width:8px;height:8px" />
-            <div class="rounded-full border border-cyan-400/70 bg-cyan-400/10" style="width:13px;height:13px" />
-            <div class="rounded-full border border-cyan-400/70 bg-cyan-400/10" style="width:18px;height:18px" />
-          </div>
-          <span class="text-[9px] text-gray-500 uppercase tracking-wider">Cancer Cases</span>
-        </div>
+      <div>
+        <h3 class="text-base font-bold tracking-[0.18em] uppercase text-blue-300 leading-none">UV Insights</h3>
+        <p class="text-xs text-gray-500 tracking-widest uppercase mt-0.5">Historical · Australia · 2016–2019</p>
       </div>
-
-      <!-- Animate -->
-      <button
-        class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-200"
-        :style="isPlaying
-          ? 'background:rgba(255,50,20,0.15);border:1px solid rgba(255,50,20,0.4);color:rgb(255,100,80);box-shadow:0 0 12px rgba(255,50,20,0.2);'
-          : 'background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:rgb(147,197,253);box-shadow:0 0 12px rgba(59,130,246,0.15);'"
-        @click="togglePlay"
-      >
-        <svg v-if="!isPlaying" viewBox="0 0 12 12" width="10" height="10" fill="currentColor"><polygon points="2,1 11,6 2,11"/></svg>
-        <svg v-else viewBox="0 0 12 12" width="10" height="10" fill="currentColor">
-          <rect x="1.5" y="1" width="3.5" height="10" rx="1"/><rect x="7" y="1" width="3.5" height="10" rx="1"/>
-        </svg>
-        {{ isPlaying ? 'Pause' : 'Animate' }}
-      </button>
     </div>
 
     <!-- ── Two-panel layout ────────────────────────────────────────────────── -->
@@ -588,177 +553,240 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
     <div class="flex flex-col md:flex-row gap-0 px-4 pb-2">
 
       <!-- ═══ Panel 1: Choropleth + cancer bubbles ═══════════════════════════ -->
-      <div class="w-full md:flex-1 flex flex-col gap-1 md:pr-3 md:min-w-0">
-        <p class="text-[9px] text-gray-600 tracking-widest uppercase pb-1 border-b border-white/[0.04]">
-          UV Heatmap + Cancer Incidents <span class="text-gray-700">· {{ currentYear }}</span>
-        </p>
+      <div class="w-full md:flex-1 flex flex-col gap-2 md:pr-3 md:min-w-0">
 
-        <!-- Comparison hint -->
-        <p class="text-[9px] pt-0.5 pb-0.5 tracking-wide transition-colors duration-200"
-          :style="selectedStates.length === 0 ? 'color:#374151'
-            : selectedStates.length === 1 ? `color:${COMPARE_COLORS[0]}70`
-            : 'color:#374151'">
-          <template v-if="selectedStates.length === 0">Click any state to compare &nbsp;·&nbsp; hover for details</template>
-          <template v-else-if="selectedStates.length === 1">
-            <span :style="{ color: COMPARE_COLORS[0] }">{{ selectedStates[0] }}</span> — click another to compare
-          </template>
-          <template v-else>
-            Comparing <span :style="{ color: COMPARE_COLORS[0] }">{{ selectedStates[0] }}</span> vs
-            <span :style="{ color: COMPARE_COLORS[1] }">{{ selectedStates[1] }}</span>
-          </template>
-        </p>
+        <!-- Panel title + description -->
+        <div class="pb-2 border-b border-white/[0.06]">
+          <h3 class="text-xs font-bold text-blue-400 tracking-[0.2em] uppercase">
+            UV Heatmap &amp; Cancer Incident
+          </h3>
+          <p class="text-[11px] text-gray-400 mt-1.5 leading-relaxed italic">
+            This map below shows the historical UV index and total skin-related cancer incidents on each 
+            state during that period of time. Each state is colour-coded by its average UV index 
+            (green = low risk, violet = extreme). The circles show total skin cancer case counts: 
+            larger circles mean higher cases of skin cancer incidents.</p>
+        </div>  
 
-        <!-- Map area -->
-        <!-- Desktop: map + vertical legend side-by-side -->
-        <!-- Mobile:  map full width, horizontal legend strip below -->
-        <div class="flex gap-2 items-stretch">
-          <div class="flex-1 relative min-w-0">
-            <div class="absolute top-2 left-2 z-10 px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase"
-              style="background:rgba(6,13,27,0.88);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.45);">
-              {{ currentYear }}
+        <!-- Instructions -->
+        <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/[0.03]">
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Interface Controls</p>
+                <p class="text-[10px] text-gray-400 leading-snug">
+                    <span class="text-blue-300">Slide</span> to change years. <br>
+                    <span class="text-blue-300">Hover</span> for metrics. <br>
+                    <span class="text-blue-300">Select</span> two states to toggle comparative mode.
+                </p>
             </div>
+        </div>
 
-            <!-- Loading -->
-            <div v-if="mapLoading" class="flex items-center justify-center rounded-xl bg-white/[0.02]" style="aspect-ratio:900/780">
-              <div class="flex flex-col items-center gap-2 text-gray-700">
-                <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-60" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                </svg>
-                <span class="text-[10px] tracking-widest uppercase">Loading map…</span>
-              </div>
-            </div>
-
-            <!-- Error -->
-            <div v-else-if="mapError"
-              class="flex items-center justify-center text-red-500 text-xs rounded-xl bg-white/[0.02]"
-              style="aspect-ratio:900/780">{{ mapError }}</div>
-
-            <!-- SVG geo map -->
-            <svg v-else viewBox="0 0 900 780" class="w-full cursor-pointer" xmlns="http://www.w3.org/2000/svg"
-              style="filter:drop-shadow(0 4px 40px rgba(20,80,200,0.12))">
-              <defs>
-                <filter id="sg" x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="6" result="b"/>
-                  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-                <filter id="sgh" x="-40%" y="-40%" width="180%" height="180%">
-                  <feGaussianBlur stdDeviation="14" result="b"/>
-                  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-              </defs>
-
-              <rect width="900" height="780" fill="#060d1b"/>
-
-              <!-- ── Layer 1: UV choropleth fills ── -->
-              <path
-                v-for="feat in geoFeatures" :key="feat.id"
-                :d="feat.path"
-                :fill="currentUV[feat.id] !== undefined ? uvColor(currentUV[feat.id]) : '#0f1f3d'"
-                :filter="hoveredId === feat.id ? 'url(#sgh)' : 'url(#sg)'"
-                stroke="#060d1b" stroke-width="1.5" stroke-linejoin="round"
-                :style="{
-                  opacity: stateOpacity(feat.id),
-                  transition: 'fill 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease',
-                }"
-                @mouseenter="hoveredId = feat.id"
-                @mouseleave="hoveredId = null"
-                @click="onStateClick(feat.id)"
-              />
-
-              <!-- ── Layer 2: Cancer bubbles (cyan, size = case count) ── -->
-              <circle
-                v-for="feat in geoFeatures" 
-                :key="`bubble-${feat.id}`"
-                :cx="feat.labelX" 
-                :cy="feat.labelY"
-                :r="cancerBubbleR(feat.id)"
-                :fill="BUBBLE_FILL"
-                :stroke="BUBBLE_STROKE"
-                stroke-width="1.5"
-                pointer-events="none"
-                :style="{
-                    opacity: currentStateCancer[feat.id] ? stateOpacity(feat.id) : 0,
-                    transition: 'r 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease',
-                    visibility: currentStateCancer[feat.id] ? 'visible' : 'hidden'
-                }"
-              />
-
-              <!-- ── Layer 3: Selection rings ── -->
-              <path
-                v-for="(sid, idx) in selectedStates" :key="`ring-${sid}`"
-                :d="geoFeatures.find(f => f.id === sid)?.path"
-                fill="none"
-                :stroke="COMPARE_COLORS[idx]"
-                stroke-width="3" stroke-dasharray="9 5" stroke-linejoin="round"
-                stroke-opacity="0.9"
-                pointer-events="none"
-                class="ring-pulse"
-              />
-
-              <!-- ── Layer 4: Text labels ── -->
-              <g v-for="feat in geoFeatures" :key="`lbl-${feat.id}`" pointer-events="none">
-                <text :x="feat.labelX" :y="feat.labelY - 7"
-                  text-anchor="middle" dominant-baseline="middle"
-                  fill="rgba(255,255,255,0.9)"
-                  :font-size="LABEL_FONT[feat.id] ?? 12" font-weight="700"
-                  font-family="'Courier New',Courier,monospace"
-                  :style="{ opacity: stateOpacity(feat.id), transition: 'opacity 0.25s ease' }"
-                >{{ feat.id }}</text>
-                <text v-if="feat.id !== 'ACT' && currentUV[feat.id] !== undefined"
-                  :x="feat.labelX" :y="feat.labelY + 9"
-                  text-anchor="middle" dominant-baseline="middle"
-                  fill="rgba(255,255,255,0.45)"
-                  :font-size="(LABEL_FONT[feat.id] ?? 10) - 1"
-                  font-family="'Courier New',Courier,monospace"
-                  :style="{ transition: 'all 0.55s ease' }"
-                >{{ currentUV[feat.id]?.toFixed(1) }}</text>
-              </g>
-
-              <!-- Compass -->
-              <g transform="translate(858,742)" opacity="0.12" fill="none" stroke="white" stroke-width="1">
-                <line x1="0" y1="-16" x2="0" y2="16"/><line x1="-16" y1="0" x2="16" y2="0"/>
-                <text x="0" y="-20" text-anchor="middle" font-size="9" fill="white" stroke="none" font-family="monospace">N</text>
-              </g>
-            </svg>
+        <!-- Map area — full width, legends embedded inside SVG -->
+        <div class="relative min-w-0">
+          <!-- Year badge -->
+          <div class="absolute top-3 left-3 z-10 px-3 py-1.5 rounded-lg text-sm font-black tracking-widest uppercase"
+            style="background:rgba(6,13,27,0.88);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);">
+            {{ currentYear }}
           </div>
 
-          <!-- Vertical UV legend — hidden on mobile (horizontal strip used instead) -->
-          <div class="hidden md:flex flex-col items-center py-2 gap-1" style="min-width:52px">
-            <p class="text-[8px] text-gray-600 uppercase tracking-widest mb-1">UV</p>
-            <div class="relative flex gap-1.5 items-start" :style="{ height: `${LEGEND_H_VERT}px` }">
-              <div class="w-4 rounded-full flex-shrink-0" :style="{
-                height: `${LEGEND_H_VERT}px`,
-                background: 'linear-gradient(to bottom,rgb(109,40,217),rgb(168,85,247),rgb(239,68,68),rgb(249,115,22),rgb(234,179,8),rgb(34,197,94))',
-                boxShadow: '0 0 10px rgba(100,150,255,0.08)',
-              }"/>
-              <div class="relative" :style="{ height: `${LEGEND_H_VERT}px`, width: '38px' }">
-                <div v-for="t in UV_TICKS" :key="t.v" class="absolute flex items-center gap-1"
-                  :style="{ top: `${uvTickY(t.v)}px`, transform: 'translateY(-50%)' }">
-                  <div class="w-1 h-px bg-gray-700"/>
-                  <span class="text-[7px] text-gray-500 leading-none whitespace-nowrap">{{ t.l }}<span v-if="t.label" class="text-gray-700"> {{ t.label }}</span></span>
-                </div>
-              </div>
+          <!-- Loading -->
+          <div v-if="mapLoading" class="flex items-center justify-center rounded-xl bg-white/[0.02]" style="aspect-ratio:900/780">
+            <div class="flex flex-col items-center gap-2 text-gray-600">
+              <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-60" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+              </svg>
+              <span class="text-xs tracking-widest uppercase">Loading map…</span>
             </div>
-            <p class="text-[7px] text-gray-700 uppercase tracking-wider mt-1">Lo↑Hi</p>
+          </div>
+
+          <!-- Error -->
+          <div v-else-if="mapError"
+            class="flex items-center justify-center text-red-400 text-sm rounded-xl bg-white/[0.02]"
+            style="aspect-ratio:900/780">{{ mapError }}</div>
+
+          <!-- SVG geo map -->
+          <svg v-else viewBox="0 0 900 780" class="w-full cursor-pointer" xmlns="http://www.w3.org/2000/svg"
+            style="filter:drop-shadow(0 4px 40px rgba(20,80,200,0.12))">
+            <defs>
+              <filter id="sg" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="6" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="sgh" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="14" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <linearGradient id="uvLegGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stop-color="rgb(109,40,217)"/>
+                <stop offset="25%"  stop-color="rgb(168,85,247)"/>
+                <stop offset="45%"  stop-color="rgb(239,68,68)"/>
+                <stop offset="65%"  stop-color="rgb(249,115,22)"/>
+                <stop offset="80%"  stop-color="rgb(234,179,8)"/>
+                <stop offset="100%" stop-color="rgb(34,197,94)"/>
+              </linearGradient>
+            </defs>
+
+            <rect width="900" height="780" fill="#060d1b"/>
+
+            <!-- ── Layer 1: UV choropleth fills ── -->
+            <path
+              v-for="feat in geoFeatures" :key="feat.id"
+              :d="feat.path"
+              :fill="currentUV[feat.id] !== undefined ? uvColor(currentUV[feat.id]) : '#0f1f3d'"
+              :filter="hoveredId === feat.id ? 'url(#sgh)' : 'url(#sg)'"
+              stroke="#060d1b" stroke-width="1.5" stroke-linejoin="round"
+              :style="{
+                opacity: stateOpacity(feat.id),
+                transition: 'fill 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease',
+              }"
+              @mouseenter="hoveredId = feat.id"
+              @mouseleave="hoveredId = null"
+              @click="onStateClick(feat.id)"
+            />
+
+            <!-- ── Layer 2: Cancer bubbles (cyan, size = case count) ── -->
+            <circle
+              v-for="feat in geoFeatures"
+              :key="`bubble-${feat.id}`"
+              :cx="feat.labelX"
+              :cy="feat.labelY"
+              :r="cancerBubbleR(feat.id)"
+              :fill="BUBBLE_FILL"
+              :stroke="BUBBLE_STROKE"
+              stroke-width="1.5"
+              pointer-events="none"
+              :style="{
+                opacity: currentStateCancer[feat.id] ? stateOpacity(feat.id) : 0,
+                transition: 'r 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease',
+              }"
+            />
+
+            <!-- ── Layer 3: Selection rings ── -->
+            <path
+              v-for="(sid, idx) in selectedStates" :key="`ring-${sid}`"
+              :d="geoFeatures.find(f => f.id === sid)?.path"
+              fill="none"
+              :stroke="COMPARE_COLORS[idx]"
+              stroke-width="3" stroke-dasharray="9 5" stroke-linejoin="round"
+              stroke-opacity="0.9"
+              pointer-events="none"
+              class="ring-pulse"
+            />
+
+            <!-- ── Layer 4: Text labels ── -->
+            <g v-for="feat in geoFeatures" :key="`lbl-${feat.id}`" pointer-events="none">
+              <text :x="feat.labelX" :y="feat.labelY - 7"
+                text-anchor="middle" dominant-baseline="middle"
+                fill="rgba(255,255,255,0.9)"
+                :font-size="LABEL_FONT[feat.id] ?? 12" font-weight="700"
+                font-family="'Courier New',Courier,monospace"
+                :style="{ opacity: stateOpacity(feat.id), transition: 'opacity 0.25s ease' }"
+              >{{ feat.id }}</text>
+              <text v-if="feat.id !== 'ACT' && currentUV[feat.id] !== undefined"
+                :x="feat.labelX" :y="feat.labelY + 9"
+                text-anchor="middle" dominant-baseline="middle"
+                fill="rgba(255,255,255,0.45)"
+                :font-size="(LABEL_FONT[feat.id] ?? 10) - 1"
+                font-family="'Courier New',Courier,monospace"
+                :style="{ transition: 'all 0.55s ease' }"
+              >{{ currentUV[feat.id]?.toFixed(1) }}</text>
+            </g>
+
+            <!-- ── Embedded UV vertical legend and cancer bubble size ── -->
+            <g transform="translate(780, 20)">
+                <rect x="0" y="0" width="110" height="460" rx="8"
+                    fill="rgba(6,13,27,0.88)" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+                
+                <g transform="translate(10, 20)">
+                    <text x="45" y="5" text-anchor="middle" fill="rgba(255,255,255,0.8)"
+                    font-size="12" font-weight="800" font-family="monospace" letter-spacing="2">UV INDEX</text>
+                    
+                    <rect x="12" y="25" width="14" height="200" rx="7" fill="url(#uvLegGrad)"/>
+                    
+                    <g v-for="t in UV_TICKS" :key="`svt-${t.v}`"
+                    :transform="`translate(0, ${25 + ((15 - t.v) / 15) * 200})`">
+                    <line x1="28" y1="0" x2="34" y2="0" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+                    <text x="40" y="0" dominant-baseline="middle" fill="rgba(255,255,255,0.7)"
+                        font-size="11" font-weight="600" font-family="monospace">{{ t.l }}</text>
+                    <text v-if="t.label" x="40" y="12" dominant-baseline="middle"
+                        fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">{{ t.label }}</text>
+                    </g>
+                </g>
+
+                <line x1="20" y1="270" x2="90" y2="270" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+
+                <g transform="translate(5, 290)">
+                    <text x="50" y="5" text-anchor="middle" fill="rgba(255,255,255,0.8)"
+                    font-size="11" font-weight="800" font-family="monospace" letter-spacing="1">CANCER CASES</text>
+                    
+                    <g transform="translate(50, 70)">
+                    <circle r="28" fill="rgba(34,211,238,0.05)" stroke="rgba(34,211,238,0.4)" stroke-width="1.5" stroke-dasharray="3,3"/>
+                    <circle r="18" fill="rgba(34,211,238,0.08)" stroke="rgba(34,211,238,0.6)" stroke-width="1.5" stroke-dasharray="3,3"/>
+                    <circle r="8"  fill="rgba(34,211,238,0.15)" stroke="rgba(34,211,238,0.9)" stroke-width="2"/>
+                    </g>
+
+                    <g font-family="monospace" text-anchor="middle">
+                        <text x="50" y="125" fill="rgba(255,255,255,0.5)" font-size="10" font-weight="600">Incident Density</text>
+                        <text x="50" y="145" fill="rgba(34,211,238,0.6)" font-size="9">(Cases per State)</text>
+                    </g>
+                </g>
+            </g>
+
+            <!-- Compass -->
+            <g transform="translate(858,742)" opacity="0.12" fill="none" stroke="white" stroke-width="1">
+              <line x1="0" y1="-16" x2="0" y2="16"/><line x1="-16" y1="0" x2="16" y2="0"/>
+              <text x="0" y="-20" text-anchor="middle" font-size="9" fill="white" stroke="none" font-family="monospace">N</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Animate button + slider — lives inside Panel 1 below the map -->
+        <div class="pt-3 pb-1">
+          <!-- Row: label · date display · animate button -->
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-500 uppercase tracking-widest">Year</span>
+              <span class="text-sm font-black tracking-widest"
+                style="color:rgb(147,197,253);text-shadow:0 0 14px rgba(59,130,246,0.5)">
+                {{ new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'short' }) }}
+                {{ currentYear }}
+              </span>
+            </div>
+            <button
+              class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-200"
+              :style="isPlaying
+                ? 'background:rgba(255,50,20,0.15);border:1px solid rgba(255,50,20,0.4);color:rgb(255,100,80);box-shadow:0 0 12px rgba(255,50,20,0.2);'
+                : 'background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:rgb(147,197,253);box-shadow:0 0 12px rgba(59,130,246,0.15);'"
+              @click="togglePlay"
+            >
+              <svg v-if="!isPlaying" viewBox="0 0 12 12" width="10" height="10" fill="currentColor"><polygon points="2,1 11,6 2,11"/></svg>
+              <svg v-else viewBox="0 0 12 12" width="10" height="10" fill="currentColor">
+                <rect x="1.5" y="1" width="3.5" height="10" rx="1"/><rect x="7" y="1" width="3.5" height="10" rx="1"/>
+              </svg>
+              {{ isPlaying ? 'Pause' : 'Play' }}
+            </button>
+          </div>
+
+          <input
+            type="range"
+            v-model.number="sliderIndex"
+            :min="0"
+            :max="TOTAL_MONTHS - 1"
+            step="1"
+            class="unified-slider w-full"
+          />
+          <div class="relative mt-2" style="height:16px">
+            <span
+              v-for="(yr, i) in UNIFIED_YEARS" :key="yr"
+              class="absolute text-xs -translate-x-1/2 leading-none font-bold transition-colors duration-200"
+              :style="{
+                left: `${(i / (UNIFIED_YEARS.length - 1)) * 100}%`,
+                color: currentYear === yr ? 'rgb(147,197,253)' : '#4b5563',
+              }"
+            >{{ yr }}</span>
           </div>
         </div>
 
-        <!-- Mobile horizontal UV legend strip (shown only on mobile) -->
-        <div class="md:hidden flex items-center gap-2 py-2 px-1 mt-1">
-          <span class="text-[8px] text-gray-600 uppercase tracking-widest shrink-0">UV</span>
-          <div class="flex-1 h-3 rounded-full" style="background:linear-gradient(to right,rgb(34,197,94),rgb(234,179,8),rgb(249,115,22),rgb(239,68,68),rgb(168,85,247),rgb(109,40,217))"/>
-          <div class="flex justify-between text-[7px] text-gray-600 w-full absolute" style="max-width:calc(100% - 4rem)">
-          </div>
-          <div class="flex gap-2 shrink-0">
-            <span class="text-[7px] text-green-500">Low</span>
-            <span class="text-[7px] text-yellow-500">Mod</span>
-            <span class="text-[7px] text-orange-500">High</span>
-            <span class="text-[7px] text-red-500">VHigh</span>
-            <span class="text-[7px] text-violet-400">Ext</span>
-          </div>
-        </div>
-      </div>
+      </div><!-- end Panel 1 -->
 
       <!-- Vertical divider (desktop only) -->
       <div class="hidden md:block w-px bg-white/[0.05] self-stretch"/>
@@ -766,17 +794,31 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
       <!-- ═══ Panel 2: Cancer trends by age group ═══════════════════════════ -->
       <div class="w-full md:flex-1 flex flex-col gap-1 md:pl-3 md:min-w-0 mt-4 md:mt-0">
 
-        <!-- Panel header -->
-        <div class="flex items-center justify-between pb-1 border-b border-white/[0.04]">
-          <p class="text-[9px] text-gray-600 tracking-widest uppercase">Skin Cancer · Incidents by Age Group</p>
-          <p class="text-[9px] text-gray-700 tracking-wider">2016 – 2019</p>
+        <!-- Panel title + description -->
+        <div class="pb-2 border-b border-white/[0.06]">
+          <h3 class="text-xs font-bold text-blue-400 tracking-[0.2em] uppercase">
+            Skin Cancer Incidents by Age Group
+          </h3>
+          <p class="text-[11px] text-gray-400 mt-1.5 leading-relaxed italic">
+            The line chart presents the annual skin cancer case counts broken down by age group across Australia (2016–2019), 
+            combining melanoma and non-melanoma types.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/[0.03]">
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Interface Controls</p>
+                <p class="text-[10px] text-gray-400 leading-snug">
+                    <span class="text-blue-300">Click</span> on one of the legends to toggle on/off the line chart. <br>
+                    <span class="text-blue-300">Hover</span> for easy comparison across age groups.
+                </p>
+            </div>
         </div>
 
         <!-- Clickable legend toggles -->
         <div class="flex flex-wrap gap-1.5 pt-2 pb-1">
           <button
             v-for="grp in AGE_GROUPS" :key="grp.key"
-            class="flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all duration-200"
+            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all duration-200"
             :style="{
               background: hiddenGroups.includes(grp.key) ? 'rgba(255,255,255,0.03)' : grp.rgba,
               border: `1px solid ${hiddenGroups.includes(grp.key) ? 'rgba(255,255,255,0.06)' : grp.color + '55'}`,
@@ -952,7 +994,7 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
               class="absolute top-2 right-0 rounded-xl px-3 py-2.5 pointer-events-none z-20"
               style="background:rgba(6,13,27,0.97);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.07);min-width:158px;"
             >
-              <p class="text-[11px] font-black text-blue-300 tracking-widest mb-2">{{ chartHoveredYear }}</p>
+              <p class="text-sm font-black text-blue-300 tracking-widest mb-2">{{ chartHoveredYear }}</p>
               <div
                 v-for="grp in [...AGE_GROUPS]
                   .filter(g => !hiddenGroups.includes(g.key))
@@ -961,10 +1003,10 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
                 class="flex items-center justify-between gap-3 mb-1 last:mb-0"
               >
                 <div class="flex items-center gap-1.5">
-                  <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" :style="{ background: grp.color }"/>
-                  <span class="text-[9px] text-gray-500">{{ grp.label }}</span>
+                  <div class="w-2 h-2 rounded-full flex-shrink-0" :style="{ background: grp.color }"/>
+                  <span class="text-xs text-gray-400">{{ grp.label }}</span>
                 </div>
-                <span class="text-[10px] font-bold tabular-nums" :style="{ color: grp.color }">
+                <span class="text-xs font-bold tabular-nums" :style="{ color: grp.color }">
                   {{ (ageAnnualData[chartHoveredYear]?.[grp.key] ?? 0).toLocaleString() }}
                 </span>
               </div>
@@ -978,90 +1020,55 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
     <Transition name="compare-slide">
       <div v-if="showComparison" class="mx-4 mb-3 rounded-xl overflow-hidden"
         style="background:rgba(10,20,45,0.96);border:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(12px);">
-        <div class="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.05]">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]">
           <div class="flex items-center gap-2.5">
-            <span class="text-[10px] text-gray-500 uppercase tracking-widest">Comparing</span>
+            <span class="text-xs text-gray-500 uppercase tracking-widest">Comparing</span>
             <span v-for="(d, i) in comparisonData" :key="d.id"
-              class="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-md"
+              class="text-xs font-bold tracking-wider px-2.5 py-1 rounded-md"
               :style="{ background:`${COMPARE_COLORS[i]}18`, color:COMPARE_COLORS[i], border:`1px solid ${COMPARE_COLORS[i]}40` }">
               {{ d.id }}
             </span>
           </div>
-          <button class="text-gray-600 hover:text-gray-300 transition-colors text-lg leading-none px-1 py-0"
+          <button class="text-gray-500 hover:text-gray-200 transition-colors text-xl leading-none px-1 py-0"
             @click="selectedStates = []">×</button>
         </div>
         <div class="grid grid-cols-2 divide-x divide-white/[0.04]">
-          <div v-for="d in comparisonData" :key="`cmp-${d.id}`" class="px-4 py-3 flex flex-col gap-2.5">
+          <div v-for="d in comparisonData" :key="`cmp-${d.id}`" class="px-4 py-4 flex flex-col gap-3">
             <div class="flex items-center gap-2">
-              <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              <div class="w-3 h-3 rounded-full flex-shrink-0"
                 :style="{ background:d.ringColor, boxShadow:`0 0 8px ${d.ringColor}` }"/>
-              <span class="text-sm font-black text-white tracking-wider">{{ d.id }}</span>
-              <span class="text-[10px] text-gray-600 truncate">{{ d.name }}</span>
+              <span class="text-base font-black text-white tracking-wider">{{ d.id }}</span>
+              <span class="text-xs text-gray-500 truncate">{{ d.name }}</span>
             </div>
             <!-- UV bar -->
-            <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between">
-                <span class="text-[9px] text-gray-600 uppercase tracking-widest">UV Index</span>
-                <span class="text-[10px] font-bold" :style="{ color:d.uvColor }">{{ d.uv?.toFixed(1) ?? '—' }} · {{ d.uvLabel }}</span>
+                <span class="text-xs text-gray-500 uppercase tracking-widest">UV Index</span>
+                <span class="text-sm font-bold" :style="{ color:d.uvColor }">{{ d.uv?.toFixed(1) ?? '—' }} · {{ d.uvLabel }}</span>
               </div>
-              <div class="h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
+              <div class="h-2 rounded-full bg-white/[0.05] overflow-hidden">
                 <div class="h-full rounded-full transition-all duration-500"
                   :style="{ width:`${d.uvPct}%`, background:d.uvColor, boxShadow:`0 0 6px ${d.uvColor}80` }"/>
               </div>
             </div>
             <!-- Cancer bar -->
-            <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between">
-                <span class="text-[9px] text-gray-600 uppercase tracking-widest">Cancer/100k · 2019</span>
-                <span class="text-[10px] font-bold text-cyan-400">{{ d.rate?.toFixed(1) ?? '—' }}</span>
+                <span class="text-xs text-gray-500 uppercase tracking-widest">Cancer / 100k</span>
+                <span class="text-sm font-bold text-cyan-400">{{ d.rate?.toFixed(1) ?? '—' }}</span>
               </div>
-              <div class="h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
+              <div class="h-2 rounded-full bg-white/[0.05] overflow-hidden">
                 <div class="h-full rounded-full transition-all duration-500"
                   :style="{ width:`${d.ratePct}%`, background:'rgba(34,211,238,0.8)', boxShadow:'0 0 6px rgba(34,211,238,0.5)' }"/>
               </div>
             </div>
-            <p class="text-[9px] text-gray-700">
-              <span class="text-gray-400 font-semibold">{{ d.count?.toLocaleString() ?? '—' }}</span> cases ({{ d.cancerYear }})
+            <p class="text-xs text-gray-600">
+              <span class="text-gray-300 font-semibold">{{ d.count?.toLocaleString() ?? '—' }}</span> cases ({{ d.cancerYear }})
             </p>
           </div>
         </div>
       </div>
     </Transition>
-
-    <!-- ── Unified timeline slider (2016–2019) ─────────────────────────────── -->
-    <div class="relative px-4 py-4">
-      <div class="h-px w-full bg-white/[0.04] mb-4"/>
-
-      <div class="flex items-center justify-between mb-2">
-        <div class="flex items-center gap-2">
-            <span class="text-sm font-black tracking-widest text-blue-300">
-                {{ new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }) }}
-                {{ currentYear }}
-            </span>
-        </div>
-      </div>
-
-      <input
-        type="range"
-        v-model.number="sliderIndex"
-        :min="0"
-        :max="TOTAL_MONTHS - 1"
-        step="1"
-        class="unified-slider w-full"
-        />
-
-      <!-- Year labels under the 4 stops -->
-      <div class="relative mt-2" style="height:14px">
-        <span
-          v-for="(yr, i) in UNIFIED_YEARS" :key="yr"
-          class="absolute text-[9px] -translate-x-1/2 leading-none font-bold transition-colors duration-200"
-          :style="{
-            left: `${(i / (UNIFIED_YEARS.length - 1)) * 100}%`,
-            color: sliderIndex === i ? 'rgb(147,197,253)' : '#374151',
-          }"
-        >{{ yr }}</span>
-      </div>
-    </div>
 
     <!-- ── Mouse-following Reality Card ───────────────────────────────────── -->
     <Transition name="tip">
@@ -1075,37 +1082,37 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
           boxShadow:`0 0 32px ${hoveredInfo.glow}, inset 0 0 0 1px rgba(255,255,255,0.04)`,
         }"
       >
-        <div class="flex items-center gap-2 mb-0.5">
-          <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+        <div class="flex items-center gap-2 mb-1">
+          <div class="w-3 h-3 rounded-full flex-shrink-0"
             :style="{ background:hoveredInfo.uvColor, boxShadow:`0 0 8px ${hoveredInfo.uvColor}` }"/>
-          <span class="text-[11px] font-black tracking-widest uppercase" :style="{ color:hoveredInfo.uvColor }">{{ hoveredInfo.id }}</span>
+          <span class="text-sm font-black tracking-widest uppercase" :style="{ color:hoveredInfo.uvColor }">{{ hoveredInfo.id }}</span>
           <span v-if="hoveredInfo.selIdx !== -1"
-            class="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
+            class="ml-auto text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
             :style="{ background:`${COMPARE_COLORS[hoveredInfo.selIdx]}20`, color:COMPARE_COLORS[hoveredInfo.selIdx] }">Selected</span>
         </div>
-        <p class="text-[10px] text-gray-500 leading-none mb-2.5 truncate">{{ hoveredInfo.name }}</p>
+        <p class="text-xs text-gray-500 leading-none mb-3 truncate">{{ hoveredInfo.name }}</p>
 
         <!-- UV -->
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[9px] text-gray-600 uppercase tracking-widest">UV Index</span>
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs text-gray-500 uppercase tracking-widest">UV Index</span>
           <div class="flex items-center gap-1.5">
-            <span class="text-base font-black text-white leading-none">{{ hoveredInfo.uv?.toFixed(1) ?? '—' }}</span>
-            <span class="text-[9px] font-bold uppercase" :style="{ color:hoveredInfo.uvColor }">{{ hoveredInfo.uvLabel }}</span>
+            <span class="text-lg font-black text-white leading-none">{{ hoveredInfo.uv?.toFixed(1) ?? '—' }}</span>
+            <span class="text-xs font-bold uppercase" :style="{ color:hoveredInfo.uvColor }">{{ hoveredInfo.uvLabel }}</span>
           </div>
         </div>
 
         <!-- Cancer rate -->
-        <div class="flex items-center justify-between mb-2.5">
-          <span class="text-[9px] text-gray-600 uppercase tracking-widest">Cancer {{ hoveredInfo.cancerYear }}</span>
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-gray-500 uppercase tracking-widest">Cancer {{ hoveredInfo.cancerYear }}</span>
           <div class="flex items-center gap-1.5">
-            <span class="text-base font-black text-white leading-none">{{ hoveredInfo.rate?.toFixed(0) ?? '—' }}</span>
-            <span class="text-[9px] text-gray-500">/100k</span>
-            <span class="text-[9px] font-bold uppercase text-cyan-400">{{ hoveredInfo.rateLabel }}</span>
+            <span class="text-lg font-black text-white leading-none">{{ hoveredInfo.rate?.toFixed(0) ?? '—' }}</span>
+            <span class="text-xs text-gray-500">/100k</span>
+            <span class="text-xs font-bold uppercase text-cyan-400">{{ hoveredInfo.rateLabel }}</span>
           </div>
         </div>
 
-        <p class="text-[9px] text-gray-600 leading-snug border-t border-white/[0.05] pt-2 mb-1.5">{{ hoveredInfo.tagline }}</p>
-        <p class="text-[9px]" :style="hoveredInfo.selIdx !== -1 ? `color:${COMPARE_COLORS[hoveredInfo.selIdx]}80` : 'color:#374151'">
+        <p class="text-xs text-gray-500 leading-snug border-t border-white/[0.05] pt-2 mb-1.5">{{ hoveredInfo.tagline }}</p>
+        <p class="text-xs" :style="hoveredInfo.selIdx !== -1 ? `color:${COMPARE_COLORS[hoveredInfo.selIdx]}80` : 'color:#4b5563'">
           {{ hoveredInfo.selIdx !== -1 ? '✓ Click to remove' : '+ Click to compare' }}
         </p>
       </div>
