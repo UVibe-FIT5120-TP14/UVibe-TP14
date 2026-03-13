@@ -58,3 +58,14 @@ class StateCancerIncidentResponse(BaseModel):
     count: int | None = None
 
     model_config = {"from_attributes": True}
+
+
+class AgeCancerIncidentResponse(BaseModel):
+    id: int
+    cancer_type: str
+    year: int
+    sex: str
+    age_group: str
+    count: int | None = None
+
+    model_config = {"from_attributes": True}

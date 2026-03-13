@@ -1,15 +1,12 @@
 import { useAuthStore } from '~/stores/auth'
 
-// Returned by GET /api/cancer/state
-// Backend aggregates: SELECT state, year, SUM(count) as count
-//   FROM state_cancer_incidents GROUP BY state, year
 export interface StateCancerRecord {
     state: string  // 'NSW' | 'VIC' | 'QLD' | 'SA' | 'WA' | 'TAS' | 'NT' | 'ACT'
     year: number   // 1982–2019
     count: number  // both cancer types + both sexes combined
 }
 
-export function useCancerData() {
+export function useStateCancerData() {
     const config = useRuntimeConfig()
     const auth = useAuthStore()
 

@@ -45,7 +45,7 @@ class StateCancerIncident(Base):
     count = Column(Integer, nullable=True)              
 
 
-class AgeCancerIncidents(Base):
+class AgeCancerIncident(Base):
     __tablename__ = "age_cancer_incidents"
 
     id = Column(Integer, primary_key=True, index=True)
