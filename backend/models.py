@@ -32,3 +32,25 @@ class UVHistory(Base):
     year = Column(Integer, index=True, nullable=False)
     month = Column(Integer, index=True, nullable=False)
     uv_index = Column(Float, nullable=False)
+
+
+class StateCancerIncident(Base):
+    __tablename__ = "state_cancer_incidents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    cancer_type = Column(String, index=True, nullable=False)
+    year = Column(Integer, index=True, nullable=False)
+    sex = Column(String, index=True, nullable=False)
+    state = Column(String, index=True, nullable=False)
+    count = Column(Integer, nullable=True)              
+
+
+class AgeCancerIncidents(Base):
+    __tablename__ = "age_cancer_incidents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    cancer_type = Column(String, index=True, nullable=False)
+    year = Column(Integer, index=True, nullable=False)
+    sex = Column(String, index=True, nullable=False) 
+    age_group = Column(String, index=True, nullable=False)
+    count = Column(Integer, nullable=True)              

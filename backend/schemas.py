@@ -47,3 +47,14 @@ class UVHistoryResponse(BaseModel):
     uv_index: float
 
     model_config = {"from_attributes": True}
+
+
+class StateCancerIncidentResponse(BaseModel):
+    id: int
+    cancer_type: str
+    year: int
+    sex: str
+    state: str
+    count: int | None = None
+
+    model_config = {"from_attributes": True}

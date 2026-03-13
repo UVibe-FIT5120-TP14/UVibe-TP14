@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 import jwt
 
 from database import engine, get_db
-from models import Base, User, UVReading, UVHistory
-from schemas import LoginRequest, RegisterRequest, TokenResponse, UserProfile, UVResponse, UVHistoryResponse
+from models import Base, User, UVReading, UVHistory, StateCancerIncident
+from schemas import LoginRequest, RegisterRequest, TokenResponse, UserProfile, UVResponse, UVHistoryResponse, StateCancerIncidentResponse
 from auth import verify_password, get_password_hash, create_access_token, decode_access_token
 from seed import seed
 import uv_service
@@ -150,4 +150,10 @@ def get_uv_history(db: Session = Depends(get_db)):
     # (8 regions * 8 years * 12 months), we can send it all to the frontend
     # and let the frontend do the filtering for instantaneous sliding.
     history = db.query(UVHistory).all()
+    return history
+
+
+@app.get("/api/cancer/state", response_model=list[StateCancerIncidentResponse])
+def get_state_cancer_incident_history(db: Session = Depends(get_db)):
+    history = db.query(StateCancerIncident).all()
     return history
