@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { GeoFeature } from '~/types/uvInsights'
-import { BUBBLE_FILL, BUBBLE_STROKE, COMPARE_COLORS, LABEL_FONT, UV_TICKS } from '~/utils/uvInsights'
+import { BUBBLE_FILL, BUBBLE_STROKE, COMPARE_COLORS, LABEL_FONT, UV_TICKS, STATE_POP } from '~/utils/uvInsights'
+import { useUVColors } from '~/composables/UVInsights/useUVColors'
 
-defineProps<{
+const props = defineProps<{
   geoFeatures: GeoFeature[]
   mapLoading: boolean
   mapError: string | null
@@ -11,17 +12,35 @@ defineProps<{
   currentYear: number
   hoveredId: string | null
   selectedStates: string[]
-  uvColor: (uv: number) => string
-  cancerBubbleR: (id: string) => number
-  stateOpacity: (id: string) => number
+  maxCancerRate: number
 }>()
-
+ 
 const emit = defineEmits<{
   'update:hoveredId': [id: string | null]
   'stateClick': [id: string]
 }>()
+ 
+// Pure utility — safe to call directly in any component
+const { uvColor } = useUVColors()
+ 
+// Computed locally so Vue tracks props.currentStateCancer and props.maxCancerRate
+// as reactive dependencies during this component's render
+function bubbleR(id: string): number {
+  const count = props.currentStateCancer[id]
+  const pop   = STATE_POP[id]
+  if (!count || !pop) return 0
+  const rate  = (count / pop) * 100_000
+  const ratio = rate / props.maxCancerRate
+  return 6 + Math.pow(ratio, 1.1) * 50
+}
+ 
+// Computed locally so Vue tracks props.selectedStates during render
+function stateOpacity(id: string): number {
+  if (props.selectedStates.length !== 2) return 1
+  return props.selectedStates.includes(id) ? 1 : 0.15
+}
 </script>
-
+ 
 <template>
   <div class="relative min-w-0">
     <!-- Current year badge -->
@@ -29,7 +48,7 @@ const emit = defineEmits<{
       style="background:rgba(6,13,27,0.88);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);">
       {{ currentYear }}
     </div>
-
+ 
     <!-- Loading state -->
     <div v-if="mapLoading"
       class="flex items-center justify-center rounded-xl bg-white/[0.02]"
@@ -43,13 +62,13 @@ const emit = defineEmits<{
         <span class="text-xs tracking-widest uppercase">Loading map…</span>
       </div>
     </div>
-
+ 
     <!-- Error state -->
     <div v-else-if="mapError"
       class="flex items-center justify-center text-red-400 text-sm rounded-xl bg-white/[0.02]"
       style="aspect-ratio:900/780"
     >{{ mapError }}</div>
-
+ 
     <!-- SVG geo map -->
     <svg v-else viewBox="0 0 900 780" class="w-full cursor-pointer" xmlns="http://www.w3.org/2000/svg"
       style="filter:drop-shadow(0 4px 40px rgba(20,80,200,0.12))">
@@ -71,9 +90,9 @@ const emit = defineEmits<{
           <stop offset="100%" stop-color="rgb(34,197,94)"/>
         </linearGradient>
       </defs>
-
+ 
       <rect width="900" height="780" fill="#060d1b"/>
-
+ 
       <!-- Layer 1: UV choropleth fills -->
       <path
         v-for="feat in geoFeatures" :key="feat.id"
@@ -89,13 +108,13 @@ const emit = defineEmits<{
         @mouseleave="emit('update:hoveredId', null)"
         @click="emit('stateClick', feat.id)"
       />
-
+ 
       <!-- Layer 2: Cancer bubbles (size = per-capita rate) -->
       <circle
         v-for="feat in geoFeatures" :key="`bubble-${feat.id}`"
         :cx="feat.labelX"
         :cy="feat.labelY"
-        :r="cancerBubbleR(feat.id)"
+        :r="bubbleR(feat.id)"
         :fill="BUBBLE_FILL"
         :stroke="BUBBLE_STROKE"
         stroke-width="1.5"
@@ -105,7 +124,7 @@ const emit = defineEmits<{
           transition: 'r 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease',
         }"
       />
-
+ 
       <!-- Layer 3: Selection rings (dashed, pulsing) -->
       <path
         v-for="(sid, idx) in selectedStates" :key="`ring-${sid}`"
@@ -117,7 +136,7 @@ const emit = defineEmits<{
         pointer-events="none"
         class="ring-pulse"
       />
-
+ 
       <!-- Layer 4: State abbreviation labels -->
       <g v-for="feat in geoFeatures" :key="`lbl-${feat.id}`" pointer-events="none">
         <text
@@ -129,12 +148,12 @@ const emit = defineEmits<{
           :style="{ opacity: stateOpacity(feat.id), transition: 'opacity 0.25s ease' }"
         >{{ feat.id }}</text>
       </g>
-
+ 
       <!-- Embedded legend panel -->
       <g transform="translate(780, 20)">
         <rect x="0" y="0" width="110" height="460" rx="8"
           fill="rgba(6,13,27,0.88)" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
-
+ 
         <!-- UV Index legend -->
         <g transform="translate(10, 20)">
           <text x="45" y="5" text-anchor="middle" fill="rgba(255,255,255,0.8)"
@@ -149,9 +168,9 @@ const emit = defineEmits<{
               fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">{{ t.label }}</text>
           </g>
         </g>
-
+ 
         <line x1="20" y1="270" x2="90" y2="270" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-
+ 
         <!-- Cancer bubble size legend -->
         <g transform="translate(5, 290)">
           <text x="50" y="5" text-anchor="middle" fill="rgba(255,255,255,0.8)"
@@ -167,7 +186,7 @@ const emit = defineEmits<{
           </g>
         </g>
       </g>
-
+ 
       <!-- Compass rose -->
       <g transform="translate(858,742)" opacity="0.12" fill="none" stroke="white" stroke-width="1">
         <line x1="0" y1="-16" x2="0"  y2="16"/>
@@ -177,3 +196,8 @@ const emit = defineEmits<{
     </svg>
   </div>
 </template>
+ 
+<style scoped>
+@keyframes ringPulse { 0%, 100% { stroke-opacity: 0.9; } 50% { stroke-opacity: 0.25; } }
+.ring-pulse { animation: ringPulse 2.2s ease-in-out infinite; }
+</style>

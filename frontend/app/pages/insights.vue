@@ -4,7 +4,7 @@ import UVInsights from '~/components/UVInsights/UVInsights.vue'
 definePageMeta({ middleware: ['auth'] })
 
 const { history, loading: uvLoading, error: uvError } = useUVHistory()
-
+const { stateCancer, loading: cancerLoading, error: cancerError } = useStateCancerData()
 </script>
 
 <template>
@@ -29,7 +29,7 @@ const { history, loading: uvLoading, error: uvError } = useUVHistory()
       </div>
 
       <!-- Insights — cancer data streams in reactively when the fetch completes -->
-      <UVInsights v-else :data="history" />
+      <UVInsights v-else :data="history" :cancer-data="stateCancer"/>
 
     </main>
 

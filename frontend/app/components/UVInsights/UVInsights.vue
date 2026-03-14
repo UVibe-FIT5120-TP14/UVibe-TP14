@@ -44,6 +44,7 @@ const {
   currentCancerYear,
   getCancerRate,
   cancerBubbleR,
+  currentMaxCancerCount,
 } = useCancerData(allUV, allCancer, currentYear, currentMonth)
 
 const {
@@ -135,9 +136,7 @@ import { COMPARE_COLORS, UV_STOPS, TOOLTIP_W } from '~/utils/uvInsights'
           :currentYear="currentYear"
           :hoveredId="hoveredId"
           :selectedStates="selectedStates"
-          :uvColor="uvColor"
-          :cancerBubbleR="cancerBubbleR"
-          :stateOpacity="stateOpacity"
+          :maxCancerRate="currentMaxCancerCount"
           @update:hoveredId="hoveredId = $event"
           @stateClick="onStateClick"
         />

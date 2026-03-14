@@ -185,7 +185,7 @@ const {
   </div>
 
   <!-- Clickable legend toggles -->
-  <div class="flex flex-wrap gap-1.5 pt-2 pb-1 order-first">
+  <div class="flex flex-wrap gap-1.5 pt-2 pb-1 order-secondary">
     <button
       v-for="grp in AGE_GROUPS" :key="grp.key"
       class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all duration-200"
