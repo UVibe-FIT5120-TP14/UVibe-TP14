@@ -38,3 +38,34 @@ class UVResponse(BaseModel):
     peak_uv: float | None = None
 
     model_config = {"from_attributes": True}
+
+
+class UVHistoryResponse(BaseModel):
+    region: str
+    year: int
+    month: int
+    uv_index: float
+
+    model_config = {"from_attributes": True}
+
+
+class StateCancerIncidentResponse(BaseModel):
+    id: int
+    cancer_type: str
+    year: int
+    sex: str
+    state: str
+    count: int | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class AgeCancerIncidentResponse(BaseModel):
+    id: int
+    cancer_type: str
+    year: int
+    sex: str
+    age_group: str
+    count: int | None = None
+
+    model_config = {"from_attributes": True}

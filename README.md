@@ -112,6 +112,9 @@ pip install -r requirements.txt
 
 # Copy the env template and fill in your values
 cp .env.example .env
+
+# Populate the historical UV and cancer incidents data
+python wrangle.py
 ```
 
 Edit `backend/.env`:

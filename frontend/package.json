@@ -11,10 +11,16 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
+    "d3-geo": "^3.1.1",
+    "d3-scale": "^4.0.2",
+    "d3-shape": "^3.2.0",
     "nuxt": "^4.3.1",
     "pinia": "^3.0.1",
     "tailwindcss": "^4.2.1",
     "vue": "^3.5.30",
     "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@types/d3-geo": "^3.1.0"
   }
 }
