@@ -110,8 +110,9 @@ import { COMPARE_COLORS, UV_STOPS, TOOLTIP_W } from '~/utils/uvInsights'
             UV Heatmap &amp; Cancer Incident
           </h3>
           <p class="text-[11px] text-gray-400 mt-1.5 leading-relaxed italic">
-            Each state is colour-coded by UV index (green = low, violet = extreme).
-            Cyan circles show skin cancer incident density — larger means higher cases.
+            This map shows the UV index and skin cancer incident density for each state in Australia from 2016 to 2019.
+            Each state is colour-coded by UV index ranging from green (low) to violet (extreme) while 
+            the bubble size shows the skin cancer incident count at each state. Larger bubble means higher cases.
           </p>
         </div>
 
@@ -163,8 +164,9 @@ import { COMPARE_COLORS, UV_STOPS, TOOLTIP_W } from '~/utils/uvInsights'
             Skin Cancer Incidents by Age Group
           </h3>
           <p class="text-[11px] text-gray-400 mt-1.5 leading-relaxed italic">
-            Annual skin cancer case counts broken down by age group across Australia (2016–2019),
-            combining melanoma and non-melanoma types.
+            This line chart shows the annual skin cancer case counts for 5 different age groups across Australia (2016–2019):
+            Children (0-14), Adolescents (15-24), Young Adults (25-34), Adults (35-54), and Elderly (55+).
+            The data combines melanoma and non-melanoma skin cancer types.
           </p>
         </div>
 
@@ -172,7 +174,7 @@ import { COMPARE_COLORS, UV_STOPS, TOOLTIP_W } from '~/utils/uvInsights'
           <div class="space-y-1">
             <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Interface Controls</p>
             <p class="text-[10px] text-gray-400 leading-snug">
-              <span class="text-blue-300">Click</span> a legend pill to toggle a line.<br>
+              <span class="text-blue-300">Click</span> a legend pill at the bottom to toggle a line.<br>
               <span class="text-blue-300">Hover</span> to compare values across groups.
             </p>
           </div>
