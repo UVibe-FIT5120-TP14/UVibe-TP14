@@ -145,7 +145,14 @@ const uvLabel = computed((): string => {
             <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color: rgba(255,107,43,0.6);">Did you know?</p>
             <p class="text-3xl font-black leading-none mb-2" style="color: #FF6B2B;">{{ currentStat.stat }}</p>
             <p class="text-xs leading-relaxed mb-2" style="color: #6B7280;">{{ currentStat.detail }}</p>
-            <p class="text-[10px]" style="color: #D9C4B0;">{{ currentStat.source }}</p>
+            <p class="text-[10px] mb-4" style="color: #D9C4B0;">{{ currentStat.source }}</p>
+            <NuxtLink
+              to="/insights"
+              class="inline-flex items-center gap-1 px-4 py-1.5 rounded-full text-xs font-bold transition-opacity hover:opacity-80"
+              style="background-color: #FF6B2B; color: #ffffff;"
+            >
+              See the data →
+            </NuxtLink>
           </div>
         </Transition>
       </div>

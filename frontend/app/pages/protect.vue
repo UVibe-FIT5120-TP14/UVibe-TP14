@@ -9,6 +9,7 @@ const { fetchedUVIndex, locationName, isLoading: isUVLoading, uvError, fetchCurr
 const { isTimerRunning, selectedIntervalHours, formattedTime, startReminder, stopReminder } = useSunscreenTimer()
 
 // --- 2. Local State ---
+const sidebarOpen = ref(false)
 const isManualUV = ref(false)
 const manualUVValue = ref(5)
 const selectedClothingItem = ref<{ icon: string, name: string, description: string } | null>(null)
@@ -58,6 +59,8 @@ const dosage = computed(() => {
   return { parts, totalTsp, totalMl, spfLabel }
 })
 
+const showDosage = ref(false)
+
 // --- 5. Clothing Modal ---
 function openClothingModal(item: any) {
   if (item) selectedClothingItem.value = item
@@ -70,7 +73,7 @@ function closeClothingModal() {
 
 <template>
   <div class="min-h-screen flex flex-col" style="background-color: #FFF8F3; color: #1A1A2E;">
-    <AppHeader :location="locationName" @toggle-sidebar="" />
+    <AppHeader :location="locationName" @toggle-sidebar="sidebarOpen = true" />
 
     <main class="flex-1 flex flex-col items-center py-6 px-4 pb-24 overflow-y-auto">
       <h1 class="text-2xl font-bold mb-1 tracking-wide" style="color: #1A1A2E;">Protection Plan</h1>
@@ -173,8 +176,18 @@ function closeClothingModal() {
           </h2>
           <p class="text-xs mb-4" style="color: #9CA3AF;">Based on your UV {{ effectiveUVIndex }} outfit — exposed areas only</p>
 
+          <!-- CTA button (collapsed state) -->
+          <button
+            v-if="!showDosage"
+            @click="showDosage = true"
+            class="w-full py-2.5 rounded-full text-sm font-bold transition-opacity hover:opacity-80"
+            style="background-color: #FF6B2B; color: #ffffff;"
+          >
+            Calculate Dosage
+          </button>
+
           <!-- Body parts breakdown -->
-          <div class="flex flex-col gap-2.5 mb-4">
+          <div v-if="showDosage" class="flex flex-col gap-2.5 mb-4">
             <div
               v-for="part in dosage.parts"
               :key="part.name"
@@ -200,17 +213,17 @@ function closeClothingModal() {
           </div>
 
           <!-- Divider -->
-          <div class="w-full mb-4" style="height:1px; background-color: rgba(26,26,46,0.08);"></div>
+          <div v-if="showDosage" class="w-full mb-4" style="height:1px; background-color: rgba(26,26,46,0.08);"></div>
 
           <!-- Total -->
-          <div class="rounded-xl px-4 py-3 text-center mb-4" style="background-color: #FFF8F3; border: 1px solid rgba(255,107,43,0.15);">
+          <div v-if="showDosage" class="rounded-xl px-4 py-3 text-center mb-4" style="background-color: #FFF8F3; border: 1px solid rgba(255,107,43,0.15);">
             <p class="text-xs mb-1" style="color: #9CA3AF;">Total to apply</p>
             <p class="text-3xl font-black leading-none" style="color: #FF6B2B;">{{ dosage.totalTsp }} tsp</p>
             <p class="text-xs mt-1" style="color: #6B7280;">≈ {{ dosage.totalMl }} ml &nbsp;·&nbsp; {{ dosage.spfLabel }}</p>
           </div>
 
           <!-- Application tips -->
-          <div class="flex flex-col gap-2">
+          <div v-if="showDosage" class="flex flex-col gap-2">
             <div class="flex items-start gap-2 text-xs" style="color: #6B7280;">
               <span class="shrink-0 mt-0.5">⏰</span>
               <span>Apply <strong style="color: #1A1A2E;">20 minutes</strong> before going outside.</span>
@@ -299,5 +312,6 @@ function closeClothingModal() {
     </div>
 
     <BottomNav active-tab="protect" />
+    <AppSidebar :open="sidebarOpen" @close="sidebarOpen = false" />
   </div>
 </template>

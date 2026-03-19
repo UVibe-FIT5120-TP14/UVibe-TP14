@@ -5,12 +5,13 @@ definePageMeta({ middleware: ['auth'] })
 
 const { history, loading: uvLoading, error: uvError } = useUVHistory()
 const { stateCancer, loading: cancerLoading, error: cancerError } = useStateCancerData()
+const sidebarOpen = ref(false)
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col" style="background-color: #FFF8F3; color: #1A1A2E;">
 
-    <AppHeader location="Melbourne, VIC" @toggle-sidebar="" />
+    <AppHeader location="Melbourne, VIC" @toggle-sidebar="sidebarOpen = true" />
 
     <main class="flex-1 flex flex-col pb-24 px-4 pt-4 gap-4">
 
@@ -34,6 +35,7 @@ const { stateCancer, loading: cancerLoading, error: cancerError } = useStateCanc
     </main>
 
     <BottomNav active-tab="insights" />
+    <AppSidebar :open="sidebarOpen" @close="sidebarOpen = false" />
 
   </div>
 </template>
