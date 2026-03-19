@@ -38,7 +38,8 @@ async function deleteAccount() {
     <Transition name="fade">
       <div
         v-if="open"
-        class="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
+        class="fixed inset-0 z-40 backdrop-blur-sm"
+        style="background-color: rgba(26,26,46,0.4);"
         @click="$emit('close')"
       />
     </Transition>
@@ -47,13 +48,15 @@ async function deleteAccount() {
     <Transition name="slide-right">
       <div
         v-if="open"
-        class="fixed top-0 right-0 h-full w-64 bg-gray-950 border-l border-white/10 text-white z-50 flex flex-col"
+        class="fixed top-0 right-0 h-full w-64 border-l z-50 flex flex-col"
+        style="background-color: #FFF8F3; border-color: rgba(26,26,46,0.1); color: #1A1A2E;"
       >
         <!-- Header -->
-        <div class="flex items-center justify-between px-5 py-4 border-b border-white/10">
-          <span class="font-bold tracking-widest text-lg">UVibe</span>
+        <div class="flex items-center justify-between px-5 py-4 border-b" style="border-color: rgba(26,26,46,0.1);">
+          <span class="font-black tracking-widest text-lg" style="color: #1A1A2E;">UVibe</span>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-800 transition-colors text-gray-400"
+            class="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
+            style="color: #9CA3AF;"
             @click="$emit('close')"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -64,7 +67,12 @@ async function deleteAccount() {
 
         <!-- Nav links -->
         <nav class="flex flex-col flex-1 px-5 py-6 gap-2">
-          <NuxtLink to="/about" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-white/5 hover:text-white transition-colors" @click="$emit('close')">
+          <NuxtLink
+            to="/about"
+            class="flex items-center gap-3 px-3 py-3 rounded-lg transition-colors"
+            style="color: #6B7280;"
+            @click="$emit('close')"
+          >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
             </svg>
@@ -72,7 +80,7 @@ async function deleteAccount() {
           </NuxtLink>
 
           <button
-            class="flex items-center gap-3 px-3 py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors w-full"
+            class="flex items-center gap-3 px-3 py-3 rounded-lg transition-colors w-full text-red-500"
             :disabled="deleting"
             @click="deleteAccount"
           >
@@ -84,9 +92,10 @@ async function deleteAccount() {
         </nav>
 
         <!-- Logout at bottom -->
-        <div class="px-5 py-6 border-t border-white/10">
+        <div class="px-5 py-6 border-t" style="border-color: rgba(26,26,46,0.1);">
           <button
-            class="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-colors"
+            class="flex items-center gap-3 w-full px-3 py-3 rounded-lg transition-colors"
+            style="color: #9CA3AF;"
             @click="logout"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
