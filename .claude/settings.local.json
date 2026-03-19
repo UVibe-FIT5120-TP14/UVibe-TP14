@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find c:UsersPriyankuvibeUVibe-TP14frontend -name tailwind* -o -name .tailwind*)"
+    ]
+  }
+}

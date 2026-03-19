@@ -14,13 +14,13 @@ defineProps<{
       :style="{
         width: '220px',
         height: '220px',
-        boxShadow: `0 0 48px 8px ${color}40, 0 0 0 6px ${color}`,
+        boxShadow: `0 0 48px 8px ${color}30, 0 0 0 6px ${color}`,
         border: `6px solid ${color}`,
       }"
     >
-      <!-- Inner dark circle -->
+      <!-- Inner circle -->
       <div class="flex flex-col items-center justify-center">
-        <span class="text-8xl font-black text-white leading-none">{{ uvIndex }}</span>
+        <span class="text-8xl font-black leading-none" style="color: #1A1A2E;">{{ uvIndex }}</span>
         <span
           class="text-sm font-bold tracking-[0.2em] mt-2"
           :style="{ color }"
@@ -28,6 +28,6 @@ defineProps<{
       </div>
     </div>
 
-    <p class="text-xs text-gray-500 tracking-widest uppercase">UV Index</p>
+    <p class="text-xs tracking-widest uppercase" style="color: #9CA3AF;">UV Index</p>
   </div>
 </template>

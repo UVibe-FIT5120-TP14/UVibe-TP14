@@ -16,6 +16,10 @@ const loading = ref(false)
 
 async function handleRegister() {
   errorMsg.value = ''
+  if (password.value.length < 8) {
+    errorMsg.value = 'Password must be at least 8 characters.'
+    return
+  }
   if (password.value !== confirmPassword.value) {
     errorMsg.value = 'Passwords do not match.'
     return
@@ -38,9 +42,20 @@ async function handleRegister() {
     auth.setToken(data.access_token)
     router.push('/')
   } catch (err: any) {
+    const status = err?.response?.status ?? err?.status
     const detail = err?.data?.detail
     if (detail === 'An account with this email already exists') {
       errorMsg.value = 'An account with this email already exists.'
+    } else if (status === 422) {
+      // Pydantic validation error — detail is an array of field errors
+      const first = Array.isArray(detail) ? detail[0] : null
+      if (first?.loc?.includes('email')) {
+        errorMsg.value = 'Please enter a valid email address (e.g. name@example.com).'
+      } else if (first?.loc?.includes('password')) {
+        errorMsg.value = 'Password must be at least 8 characters.'
+      } else {
+        errorMsg.value = 'Please check your details and try again.'
+      }
     } else {
       errorMsg.value = 'Something went wrong. Please try again later.'
     }
