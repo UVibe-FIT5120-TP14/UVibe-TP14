@@ -26,23 +26,6 @@ const emit = defineEmits<{
           {{ currentYear }}
         </span>
       </div>
-
-      <button
-        class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-200"
-        :style="isPlaying
-          ? 'background:rgba(255,50,20,0.15);border:1px solid rgba(255,50,20,0.4);color:rgb(255,100,80);box-shadow:0 0 12px rgba(255,50,20,0.2);'
-          : 'background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:rgb(147,197,253);box-shadow:0 0 12px rgba(59,130,246,0.15);'"
-        @click="emit('togglePlay')"
-      >
-        <svg v-if="!isPlaying" viewBox="0 0 12 12" width="10" height="10" fill="currentColor">
-          <polygon points="2,1 11,6 2,11"/>
-        </svg>
-        <svg v-else viewBox="0 0 12 12" width="10" height="10" fill="currentColor">
-          <rect x="1.5" y="1" width="3.5" height="10" rx="1"/>
-          <rect x="7"   y="1" width="3.5" height="10" rx="1"/>
-        </svg>
-        {{ isPlaying ? 'Pause' : 'Play' }}
-      </button>
     </div>
 
     <!-- Slider -->

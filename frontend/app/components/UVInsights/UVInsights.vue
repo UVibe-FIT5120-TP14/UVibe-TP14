@@ -10,13 +10,17 @@ import { useCancerData }       from '~/composables/UVInsights/useCancerData'
 import { useMapInteractions }  from '~/composables/UVInsights/useMapInteractions'
 
 // ─── Components ───────────────────────────────────────────────────────────────
-import UVMapSvg          from '~/components/UVInsights/UVMapSvg.vue'
-import AgeGroupChart     from '~/components/UVInsights/AgeGroupChart.vue'
-import ComparisonDrawer  from '~/components/UVInsights/ComparisonDrawer.vue'
-import TimelineSlider    from '~/components/UVInsights/TimelineSlider.vue'
+import ContextHero      from '~/components/UVInsights/ContextHero.vue'
+import InsightsBridge   from '~/components/UVInsights/InsightsBridge.vue'
+import UVMapSvg         from '~/components/UVInsights/UVMapSvg.vue'
+import AgePrediction    from '~/components/UVInsights/AgePrediction.vue'
+import ComparisonDrawer from '~/components/UVInsights/ComparisonDrawer.vue'
+import TimelineSlider   from '~/components/UVInsights/TimelineSlider.vue'
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+import { COMPARE_COLORS, TOOLTIP_W } from '~/utils/uvInsights'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
-
 const props = defineProps<{
   data?:       UVHistoryResponse[]
   cancerData?: StateCancerRecord[]
@@ -26,7 +30,6 @@ const allUV     = computed(() => props.data       ?? [])
 const allCancer = computed(() => props.cancerData ?? [])
 
 // ─── Composable wiring ────────────────────────────────────────────────────────
-
 const { geoFeatures, mapLoading, mapError } = useGeoMap()
 
 const {
@@ -35,16 +38,14 @@ const {
   togglePlay,
 } = useTimelinePlayback()
 
-const { uvColor, uvColorA, interpColor } = useUVColors()
+const { uvColor } = useUVColors()
 
 const {
   currentUV,
   currentStateCancer,
-  latestStateCancer,
   currentCancerYear,
   getCancerRate,
   cancerBubbleR,
-  currentMaxCancerCount,
 } = useCancerData(allUV, allCancer, currentYear, currentMonth)
 
 const {
@@ -53,96 +54,73 @@ const {
   selectedStates, stateOpacity, onStateClick,
   showComparison, comparisonData,
 } = useMapInteractions(
-  geoFeatures,
-  currentUV,
-  currentStateCancer,
-  currentCancerYear,
-  getCancerRate,
+  geoFeatures, currentUV, currentStateCancer, currentCancerYear, getCancerRate,
 )
 
 // ─── Entrance animation ───────────────────────────────────────────────────────
-
 const visible = ref(false)
-onMounted(() => { requestAnimationFrame(() => { visible.value = true }) })
-
-// ─── Constants re-exported for inline template use ────────────────────────────
-import { COMPARE_COLORS, UV_STOPS, TOOLTIP_W } from '~/utils/uvInsights'
+onMounted(() => requestAnimationFrame(() => { visible.value = true }))
 </script>
 
 <template>
   <div
     ref="containerRef"
-    class="relative w-full bg-[#060d1b] text-white overflow-hidden select-none font-mono"
-    :style="{
-      opacity:   visible ? 1 : 0,
-      transform: visible ? 'none' : 'translateY(20px)',
-      transition: 'opacity 0.7s ease, transform 0.7s ease',
-    }"
+    class="root"
+    :class="{ visible }"
     @mousemove="onMouseMove"
   >
-    <!-- Atmospheric background -->
-    <div class="absolute inset-0 pointer-events-none"
-      style="background: radial-gradient(ellipse 80% 50% at 45% 40%, rgba(30,100,255,0.05) 0%, transparent 70%)"/>
-    <div class="absolute inset-0 pointer-events-none opacity-[0.02]"
-      style="background-image: linear-gradient(rgba(59,130,246,1) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,1) 1px, transparent 1px); background-size: 40px 40px;"/>
+    <!-- Decorative background blobs -->
+    <div class="blob blob-a" aria-hidden="true"/>
+    <div class="blob blob-b" aria-hidden="true"/>
 
-    <!-- ── Header ──────────────────────────────────────────────────────────── -->
-    <div class="relative px-5 pt-5 pb-3 flex items-center gap-3">
-      <div class="flex flex-col gap-[3px]">
-        <div class="h-0.5 w-6 rounded-full bg-blue-400"/>
-        <div class="h-0.5 w-4 rounded-full bg-blue-600"/>
-        <div class="h-0.5 w-5 rounded-full bg-blue-500"/>
-      </div>
-      <div>
-        <h3 class="text-base font-bold tracking-[0.18em] uppercase text-blue-300 leading-none">UV Insights</h3>
-        <p class="text-xs text-gray-500 tracking-widest uppercase mt-0.5">Historical · Australia · 2016–2019</p>
-      </div>
-    </div>
+    <!-- ── Hero ──────────────────────────────────────────────────────── -->
+    <ContextHero />
 
-    <!-- ── Two-panel layout ────────────────────────────────────────────────── -->
-    <div class="flex flex-col md:flex-row gap-0 px-4 pb-2">
+    <div class="divider"/>
 
-      <!-- ═══ Panel 1: Map ══════════════════════════════════════════════════ -->
-      <div class="w-full md:flex-1 flex flex-col gap-2 md:pr-3 md:min-w-0">
+    <!-- ── Insights bridge ───────────────────────────────────────────── -->
+    <InsightsBridge />
 
-        <div class="pb-2 border-b border-white/[0.06]">
-          <h3 class="text-xs font-bold text-blue-400 tracking-[0.2em] uppercase">
-            UV Heatmap &amp; Cancer Incident
-          </h3>
-          <p class="text-[11px] text-gray-400 mt-1.5 leading-relaxed italic">
-            This map shows the UV index and skin cancer incident density for each state in Australia from 2016 to 2019.
-            Each state is colour-coded by UV index ranging from green (low) to violet (extreme) while 
-            the bubble size shows the skin cancer incident count at each state. Larger bubble means higher cases.
+    <div class="divider"/>
+
+    <!-- ── Two-panel layout ──────────────────────────────────────────── -->
+    <div class="panels" data-viz-section>
+
+      <!-- Map panel -->
+      <div class="panel">
+        <div class="sec-head">
+          <span class="sec-tag">Live Map</span>
+          <h2 class="sec-title">Confident you're safe from the sun?</h2>
+          <p class="sec-desc">
+            Each state is coloured by UV index — green means chill, violet means danger zone.
+            Cyan circles show skin cancer case density. Tap two states to compare them.
           </p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/[0.03]">
-          <div class="space-y-1">
-            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Interface Controls</p>
-            <p class="text-[10px] text-gray-400 leading-snug">
-              <span class="text-blue-300">Slide</span> to change month/year.<br>
-              <span class="text-blue-300">Hover</span> for metrics.<br>
-              <span class="text-blue-300">Select</span> two states to compare.
-            </p>
-          </div>
+        <div class="hint-row">
+          <span class="hint"><em>Slide</em> to change month</span>
+          <span class="hint"><em>Hover</em> for stats</span>
+          <span class="hint"><em>Tap 2</em> to compare</span>
         </div>
 
-        <!-- Map -->
-        <UVMapSvg
-          :geoFeatures="geoFeatures"
-          :mapLoading="mapLoading"
-          :mapError="mapError"
-          :currentUV="currentUV"
-          :currentStateCancer="currentStateCancer"
-          :currentYear="currentYear"
-          :hoveredId="hoveredId"
-          :selectedStates="selectedStates"
-          :maxCancerRate="currentMaxCancerCount"
-          @update:hoveredId="hoveredId = $event"
-          @stateClick="onStateClick"
-        />
+        <div class="map-shell">
+          <UVMapSvg
+            :geoFeatures="geoFeatures"
+            :mapLoading="mapLoading"
+            :mapError="mapError"
+            :currentUV="currentUV"
+            :currentStateCancer="currentStateCancer"
+            :currentYear="currentYear"
+            :hoveredId="hoveredId"
+            :selectedStates="selectedStates"
+            :uvColor="uvColor"
+            :cancerBubbleR="cancerBubbleR"
+            :stateOpacity="stateOpacity"
+            @update:hoveredId="hoveredId = $event"
+            @stateClick="onStateClick"
+          />
+        </div>
 
-        <!-- Slider -->
         <TimelineSlider
           v-model:sliderIndex="sliderIndex"
           :isPlaying="isPlaying"
@@ -151,58 +129,25 @@ import { COMPARE_COLORS, UV_STOPS, TOOLTIP_W } from '~/utils/uvInsights'
           @togglePlay="togglePlay"
         />
       </div>
-      <!-- end Panel 1 -->
 
-      <!-- Vertical divider (desktop only) -->
-      <div class="hidden md:block w-px bg-white/[0.05] self-stretch"/>
+      <div class="v-rule" aria-hidden="true"/>
 
-      <!-- ═══ Panel 2: Age-group chart ══════════════════════════════════════ -->
-      <div class="w-full md:flex-1 flex flex-col gap-1 md:pl-3 md:min-w-0 mt-4 md:mt-0">
-
-        <div class="pb-2 border-b border-white/[0.06]">
-          <h3 class="text-xs font-bold text-blue-400 tracking-[0.2em] uppercase">
-            Skin Cancer Incidents by Age Group
-          </h3>
-          <p class="text-[11px] text-gray-400 mt-1.5 leading-relaxed italic">
-            This line chart shows the annual skin cancer case counts for 5 different age groups across Australia (2016–2019):
-            Children (0-14), Adolescents (15-24), Young Adults (25-34), Adults (35-54), and Elderly (55+).
-            The data combines melanoma and non-melanoma skin cancer types.
+      <!-- Prediction panel -->
+      <div class="panel">
+        <div class="sec-head">
+          <span class="sec-tag">Your Future</span>
+          <h2 class="sec-title">Where is your age group headed?</h2>
+          <p class="sec-desc">
+            Enter your age to see how skin cancer cases in your group are projected to grow
+            over the next decade — and what you can do about it.
           </p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/[0.03]">
-          <div class="space-y-1">
-            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Interface Controls</p>
-            <p class="text-[10px] text-gray-400 leading-snug">
-              <span class="text-blue-300">Click</span> a legend pill at the bottom to toggle a line.<br>
-              <span class="text-blue-300">Hover</span> to compare values across groups.
-            </p>
-          </div>
-        </div>
-
-        <AgeGroupChart />
-
-        <!-- Attribution footer -->
-        <div class="mt-auto pt-4 flex flex-col gap-1 border-t border-white/[0.05]">
-          <div class="flex items-center justify-between text-[10px] tracking-wider uppercase font-bold text-gray-600">
-            <span>Data Attribution</span>
-            <span class="text-[9px] font-normal lowercase opacity-50 italic">v1.0.4-stable</span>
-          </div>
-          <p class="text-[10px] leading-relaxed text-gray-500">
-            UV Index data sourced from
-            <a href="https://data.gov.au/data/organization/australian-radiation-protection-and-nuclear-safety-agency-arpansa"
-              target="_blank" class="text-blue-400/60 hover:text-blue-400 underline decoration-dotted">data.gov.au</a>.
-            Cancer statistics provided by
-            <a href="https://www.aihw.gov.au/reports/cancer/cancer-data-in-australia/contents/cancer-data-commentaries/risk-of-melanoma"
-              target="_blank" class="text-blue-400/60 hover:text-blue-400 underline decoration-dotted">AIHW</a>.
-            Distributed under <span class="text-gray-400">CC BY 4.0</span> license.
-          </p>
-        </div>
+        <AgePrediction />
       </div>
-      <!-- end Panel 2 -->
     </div>
 
-    <!-- ── Comparison drawer ──────────────────────────────────────────────── -->
+    <!-- ── Comparison drawer ──────────────────────────────────────────── -->
     <Transition name="compare-slide">
       <ComparisonDrawer
         v-if="showComparison"
@@ -211,64 +156,61 @@ import { COMPARE_COLORS, UV_STOPS, TOOLTIP_W } from '~/utils/uvInsights'
       />
     </Transition>
 
-    <!-- ── Mouse-following tooltip (Reality Card) ─────────────────────────── -->
+    <!-- ── Attribution ───────────────────────────────────────────────── -->
+    <footer class="attr">
+      <span class="attr-hl">Data sources</span>
+      UV: <a href="https://data.gov.au/data/organization/australian-radiation-protection-and-nuclear-safety-agency-arpansa" target="_blank">ARPANSA via data.gov.au</a>
+      · Cancer: <a href="https://www.aihw.gov.au/reports/cancer/cancer-data-in-australia/contents/cancer-data-commentaries/risk-of-melanoma" target="_blank">AIHW</a>
+      · <span class="attr-hl">CC BY 4.0</span>
+    </footer>
+
+    <!-- ── Mouse-following tooltip ──────────────────────────────────────── -->
     <Transition name="tip">
-      <div v-if="hoveredInfo"
-        class="absolute z-50 rounded-xl px-4 py-3 pointer-events-none"
+      <div
+        v-if="hoveredInfo"
+        class="tooltip"
         :style="{
           ...tooltipStyle,
-          background:       'rgba(6,13,27,0.97)',
-          backdropFilter:   'blur(16px)',
-          width:            `${TOOLTIP_W}px`,
-          border:           `1px solid ${hoveredInfo.glow}`,
-          boxShadow:        `0 0 32px ${hoveredInfo.glow}, inset 0 0 0 1px rgba(255,255,255,0.04)`,
+          width:       `${TOOLTIP_W}px`,
+          borderColor: `${hoveredInfo.uvColor}55`,
         }"
       >
-        <div class="flex items-center gap-2 mb-1">
-          <div class="w-3 h-3 rounded-full flex-shrink-0"
-            :style="{ background: hoveredInfo.uvColor, boxShadow: `0 0 8px ${hoveredInfo.uvColor}` }"/>
-          <span class="text-sm font-black tracking-widest uppercase" :style="{ color: hoveredInfo.uvColor }">
-            {{ hoveredInfo.id }}
-          </span>
-          <span v-if="hoveredInfo.selIdx !== -1"
-            class="ml-auto text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
-            :style="{
-              background: `${COMPARE_COLORS[hoveredInfo.selIdx]}20`,
-              color:       COMPARE_COLORS[hoveredInfo.selIdx],
-            }">Selected</span>
+        <div class="tt-head">
+          <div class="tt-dot" :style="{ background: hoveredInfo.uvColor, boxShadow: `0 0 8px ${hoveredInfo.uvColor}` }"/>
+          <span class="tt-id" :style="{ color: hoveredInfo.uvColor }">{{ hoveredInfo.id }}</span>
+          <span
+            v-if="hoveredInfo.selIdx !== -1"
+            class="tt-badge"
+            :style="{ background: `${COMPARE_COLORS[hoveredInfo.selIdx]}20`, color: COMPARE_COLORS[hoveredInfo.selIdx] }"
+          >Selected</span>
         </div>
-        <p class="text-xs text-gray-500 leading-none mb-3 truncate">{{ hoveredInfo.name }}</p>
+        <p class="tt-name">{{ hoveredInfo.name }}</p>
 
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs text-gray-500 uppercase tracking-widest">UV Index</span>
-          <div class="flex items-center gap-1.5">
-            <span class="text-lg font-black text-white leading-none">{{ hoveredInfo.uv?.toFixed(1) ?? '—' }}</span>
-            <span class="text-xs font-bold uppercase" :style="{ color: hoveredInfo.uvColor }">{{ hoveredInfo.uvLabel }}</span>
+        <div class="tt-row">
+          <span class="tt-lbl">UV Index</span>
+          <div class="tt-vals">
+            <span class="tt-num">{{ hoveredInfo.uv?.toFixed(1) ?? '—' }}</span>
+            <span class="tt-cat" :style="{ color: hoveredInfo.uvColor }">{{ hoveredInfo.uvLabel }}</span>
+          </div>
+        </div>
+        <div class="tt-row">
+          <span class="tt-lbl">Cancer {{ hoveredInfo.cancerYear }}</span>
+          <div class="tt-vals">
+            <span class="tt-num">{{ hoveredInfo.rate?.toFixed(0) ?? '—' }}</span>
+            <span class="tt-unit">/100k</span>
+            <span class="tt-cat" style="color:#0891B2">{{ hoveredInfo.rateLabel }}</span>
+          </div>
+        </div>
+        <div class="tt-row">
+          <span class="tt-lbl">Population</span>
+          <div class="tt-vals">
+            <span class="tt-num">{{ hoveredInfo.population?.toLocaleString() ?? '—' }}</span>
+            <span class="tt-unit">people</span>
           </div>
         </div>
 
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-xs text-gray-500 uppercase tracking-widest">Cancer {{ hoveredInfo.cancerYear }}</span>
-          <div class="flex items-center gap-1.5">
-            <span class="text-lg font-black text-white leading-none">{{ hoveredInfo.rate?.toFixed(0) ?? '—' }}</span>
-            <span class="text-xs text-gray-500">/100k</span>
-            <span class="text-xs font-bold uppercase text-cyan-400">{{ hoveredInfo.rateLabel }}</span>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs text-gray-500 uppercase tracking-widest">Estimated Population</span>
-          <div class="flex items-center gap-1.5">
-            <span class="text-lg font-black text-white leading-none">{{ hoveredInfo.population?.toLocaleString() ?? '—' }}</span>
-            <span class="text-xs text-gray-500">people</span>
-          </div>
-        </div>
-
-        <p class="text-xs text-gray-500 leading-snug border-t border-white/[0.05] pt-2 mb-1.5">
-          {{ hoveredInfo.tagline }}
-        </p>
-        <p class="text-xs"
-          :style="hoveredInfo.selIdx !== -1 ? `color:${COMPARE_COLORS[hoveredInfo.selIdx]}80` : 'color:#4b5563'">
+        <p class="tt-tagline">{{ hoveredInfo.tagline }}</p>
+        <p class="tt-action" :style="hoveredInfo.selIdx !== -1 ? `color:${COMPARE_COLORS[hoveredInfo.selIdx]}80` : 'color:#4b5563'">
           {{ hoveredInfo.selIdx !== -1 ? '✓ Click to remove' : '+ Click to compare' }}
         </p>
       </div>
@@ -276,37 +218,171 @@ import { COMPARE_COLORS, UV_STOPS, TOOLTIP_W } from '~/utils/uvInsights'
   </div>
 </template>
 
+<!-- Non-scoped: load Google Fonts -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Nunito:wght@400;600;700&display=swap');
+</style>
+
 <style scoped>
-/* ── Unified timeline slider ─────────────────────────────────────────── */
-.unified-slider {
+/* ── Theme tokens ───────────────────────────────────────────────────────── */
+.root {
+  --orange: #FF6B2B;
+  --yellow: #FFD166;
+  --coral:  #FF9B71;
+  --dark:   #1A1A2E;
+  --muted:  #6B7280;
+  --bg:     #FFF8F3;
+  --card:   #FFFFFF;
+
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--dark);
+  font-family: 'Nunito', sans-serif;
+  overflow: hidden;
+  /* Entrance */
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.root.visible { opacity: 1; transform: none; }
+
+/* ── Background blobs ── */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(90px);
+  opacity: 0.32;
+  z-index: 0;
+}
+.blob-a { width: 560px; height: 560px; top: -200px; right: -120px; background: radial-gradient(circle, #FFD166 0%, transparent 70%); }
+.blob-b { width: 480px; height: 480px; bottom: 80px; left: -160px; background: radial-gradient(circle, #FF9B71 0%, transparent 70%); }
+
+/* ── Divider ── */
+.divider { height: 1px; background: rgba(255,107,43,0.12); margin: 0 40px; }
+
+/* ── Two-panel grid ── */
+.panels {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  padding: 0 32px 36px;
+}
+.v-rule { background: rgba(255,107,43,0.1); margin: 32px 0; }
+.panel  { padding: 32px 20px; min-width: 0; }
+
+/* ── Section headings ── */
+.sec-head  { margin-bottom: 16px; }
+.sec-tag   {
+  display: inline-block;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--orange); background: rgba(255,107,43,0.09);
+  border-radius: 100px; padding: 4px 12px; margin-bottom: 10px;
+}
+.sec-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 800; color: var(--dark);
+  margin: 0 0 10px; line-height: 1.25;
+}
+.sec-desc { font-size: 14px; line-height: 1.65; color: var(--muted); margin: 0; }
+
+/* ── Hint pills ── */
+.hint-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.hint {
+  font-size: 13px; font-weight: 600; color: var(--muted);
+}
+.hint em {
+  font-style: normal;
+  background: rgba(255,107,43,0.1); color: var(--orange);
+  border-radius: 6px; padding: 2px 8px;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.04em;
+  margin-right: 3px;
+}
+
+/* ── Map shell ── */
+.map-shell {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 48px rgba(26,26,46,0.2);
+  margin-bottom: 4px;
+}
+
+/* ── Timeline slider override (warm orange track) ── */
+:deep(.unified-slider) {
   -webkit-appearance: none; appearance: none;
   width: 100%; height: 5px; border-radius: 3px; outline: none; cursor: pointer;
-  background: linear-gradient(to right, rgba(59,130,246,0.4), rgba(147,197,253,0.9));
+  background: linear-gradient(to right, rgba(255,107,43,0.25), rgba(255,107,43,0.85));
 }
-.unified-slider::-webkit-slider-thumb {
+:deep(.unified-slider::-webkit-slider-thumb) {
   -webkit-appearance: none; appearance: none;
   width: 20px; height: 20px; border-radius: 50%; background: #fff;
-  border: 3px solid rgb(147,197,253);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.2), 0 0 16px rgba(59,130,246,0.6), 0 2px 5px rgba(0,0,0,0.5);
+  border: 3px solid var(--orange);
+  box-shadow: 0 0 0 3px rgba(255,107,43,0.2), 0 0 16px rgba(255,107,43,0.45), 0 2px 5px rgba(0,0,0,0.12);
   cursor: pointer; transition: transform 0.15s ease;
 }
-.unified-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
-.unified-slider::-moz-range-thumb {
+:deep(.unified-slider::-webkit-slider-thumb:hover) { transform: scale(1.22); }
+:deep(.unified-slider::-moz-range-thumb) {
   width: 20px; height: 20px; border-radius: 50%; background: #fff;
-  border: 3px solid rgb(147,197,253);
-  box-shadow: 0 0 14px rgba(59,130,246,0.6); cursor: pointer;
+  border: 3px solid var(--orange); box-shadow: 0 0 14px rgba(255,107,43,0.45); cursor: pointer;
 }
 
-/* ── Selection ring pulse ────────────────────────────────────────────── */
-@keyframes ringPulse { 0%, 100% { stroke-opacity: 0.9; } 50% { stroke-opacity: 0.25; } }
-.ring-pulse { animation: ringPulse 2.2s ease-in-out infinite; }
+/* ── Attribution footer ── */
+.attr {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 14px 40px 20px;
+  font-size: 11px; color: var(--muted);
+  border-top: 1px solid rgba(255,107,43,0.08);
+  position: relative; z-index: 1;
+}
+.attr a { color: var(--orange); text-decoration: none; font-weight: 700; }
+.attr a:hover { text-decoration: underline; }
+.attr-hl  { font-weight: 800; color: var(--dark); }
+.attr-ver { margin-left: auto; opacity: 0.35; font-style: italic; }
 
-/* ── Transitions ─────────────────────────────────────────────────────── */
+/* ── Tooltip ── */
+.tooltip {
+  position: absolute; z-index: 50;
+  border-radius: 16px; padding: 16px 18px;
+  pointer-events: none;
+  background: #fff;
+  border: 1.5px solid; /* color set via inline :style */
+  box-shadow: 0 8px 40px rgba(255,107,43,0.12), 0 2px 8px rgba(0,0,0,0.06);
+}
+.tt-head  { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+.tt-dot   { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+.tt-id    { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: #1A1A2E; }
+.tt-badge {
+  margin-left: auto; font-size: 10px; font-weight: 800;
+  padding: 3px 9px; border-radius: 100px; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.tt-name    { font-size: 12px; color: #9CA3AF; font-weight: 600; margin: 0 0 12px; }
+.tt-row     { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.tt-lbl     { font-size: 11px; font-weight: 800; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.08em; }
+.tt-vals    { display: flex; align-items: baseline; gap: 5px; }
+.tt-num     { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 900; color: #1A1A2E; line-height: 1; }
+.tt-unit    { font-size: 11px; color: #9CA3AF; font-weight: 600; }
+.tt-cat     { font-size: 11px; font-weight: 800; text-transform: uppercase; }
+.tt-tagline { font-size: 12px; color: #6B7280; border-top: 1px solid rgba(255,107,43,0.12); padding-top: 10px; margin: 10px 0 5px; line-height: 1.5; }
+.tt-action  { font-size: 11px; font-weight: 700; margin: 0; }
+
+/* ── Transitions ── */
 .tip-enter-active, .tip-leave-active   { transition: opacity 0.12s ease, transform 0.12s ease; }
-.tip-enter-from,   .tip-leave-to       { opacity: 0; transform: scale(0.94); }
-
-.compare-slide-enter-active            { transition: all 0.3s  cubic-bezier(0.4,0,0.2,1); }
-.compare-slide-leave-active            { transition: all 0.22s cubic-bezier(0.4,0,0.2,1); }
+.tip-enter-from,   .tip-leave-to       { opacity: 0; transform: scale(0.93); }
+.compare-slide-enter-active { transition: all 0.3s  cubic-bezier(0.4,0,0.2,1); }
+.compare-slide-leave-active { transition: all 0.22s cubic-bezier(0.4,0,0.2,1); }
 .compare-slide-enter-from,
-.compare-slide-leave-to                { opacity: 0; transform: translateY(-8px); }
+.compare-slide-leave-to     { opacity: 0; transform: translateY(-10px); }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .panels  { grid-template-columns: 1fr; padding: 0 20px 28px; }
+  .v-rule  { display: none; }
+  .panel   { padding: 24px 8px; }
+  .divider { margin: 0 20px; }
+  .attr    { padding: 12px 20px 18px; }
+}
 </style>
