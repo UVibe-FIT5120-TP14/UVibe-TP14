@@ -15,7 +15,7 @@ export const NAME_TO_CODE: Record<string, string> = {
     'Tasmania': 'TAS',
 }
 
-export const LABEL_FONT: Record<string, number> = { ACT: 7, TAS: 9, VIC: 10 }
+export const LABEL_FONT: Record<string, number> = { ACT: 16 }
 
 export const SVG_W = 900
 export const SVG_H = 780
