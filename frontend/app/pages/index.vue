@@ -140,7 +140,7 @@ const previewOutfit = {
     <!-- ═══════════════════════════════════════
          HERO SECTION
     ═══════════════════════════════════════ -->
-    <section class="relative overflow-hidden px-5 sm:px-10 pt-20 pb-24 sm:pt-28 sm:pb-32 text-center">
+    <section class="relative overflow-hidden px-5 sm:px-10 pt-14 pb-12 sm:pt-20 sm:pb-16 text-center">
       <!-- Warm ambient blobs -->
       <div class="pointer-events-none absolute inset-0">
         <div
@@ -153,7 +153,7 @@ const previewOutfit = {
         />
       </div>
 
-      <div class="relative max-w-3xl mx-auto space-y-7">
+      <div class="relative max-w-3xl mx-auto space-y-5">
         <!-- Badge -->
         <span
           class="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold tracking-widest uppercase rounded-full border"
@@ -170,37 +170,26 @@ const previewOutfit = {
 
         <!-- Stats widget (inline with hero) -->
         <div
-          class="relative rounded-3xl px-8 py-10 md:px-12 md:py-12 overflow-hidden text-left"
-          style="background: linear-gradient(135deg, #1A1A2E 0%, #2d1f3d 100%);"
+          class="relative rounded-2xl px-6 py-7 sm:px-10 sm:py-8 overflow-hidden"
+          style="background: linear-gradient(135deg, #1A1A2E 0%, #2a1f3a 100%);"
         >
-          <div
-            class="pointer-events-none absolute inset-0 opacity-10"
-            style="background-image: radial-gradient(circle, #FF6B2B 1px, transparent 1px); background-size: 28px 28px;"
-          />
-          <div
-            class="pointer-events-none absolute -top-16 right-1/3 w-64 h-64 rounded-full blur-3xl"
-            style="background: radial-gradient(circle, rgba(255,209,102,0.2) 0%, transparent 70%);"
-          />
-          <p class="relative text-center text-xs font-bold tracking-[0.2em] uppercase mb-8" style="color: #FF6B2B;">
-            Why UV Matters
-          </p>
-          <div class="relative grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6 text-center">
-            <div class="space-y-2">
-              <p class="text-5xl sm:text-6xl font-black leading-none" style="color: #FF6B2B;">2 in 3</p>
-              <p class="text-sm leading-relaxed px-2" style="color: #9CA3AF;">Australians will be diagnosed with skin cancer by age 70</p>
-              <p class="text-xs" style="color: #4b5563;">sunsmart.com.au</p>
+          <div class="relative grid grid-cols-3 gap-2 text-center divide-x"
+            style="divide-color: rgba(255,255,255,0.07);"
+          >
+            <div class="space-y-1 px-3">
+              <p class="text-3xl sm:text-4xl font-black leading-none" style="color: #FF6B2B;">2 in 3</p>
+              <p class="text-[11px] leading-snug" style="color: #9CA3AF;">Australians get skin cancer by 70</p>
+              <p class="text-[10px]" style="color: #374151;">sunsmart.com.au</p>
             </div>
-            <div class="relative space-y-2">
-              <div class="hidden sm:block absolute -left-3 top-0 bottom-0 w-px" style="background-color: rgba(255,255,255,0.06);" />
-              <div class="hidden sm:block absolute -right-3 top-0 bottom-0 w-px" style="background-color: rgba(255,255,255,0.06);" />
-              <p class="text-5xl sm:text-6xl font-black leading-none" style="color: #FF6B2B;">99%</p>
-              <p class="text-sm leading-relaxed px-2" style="color: #9CA3AF;">of non-melanoma skin cancers are caused by UV radiation</p>
-              <p class="text-xs" style="color: #4b5563;">aihw.gov.au</p>
+            <div class="space-y-1 px-3">
+              <p class="text-3xl sm:text-4xl font-black leading-none" style="color: #FF6B2B;">99%</p>
+              <p class="text-[11px] leading-snug" style="color: #9CA3AF;">of skin cancers caused by UV</p>
+              <p class="text-[10px]" style="color: #374151;">aihw.gov.au</p>
             </div>
-            <div class="space-y-2">
-              <p class="text-5xl sm:text-6xl font-black leading-none" style="color: #FF6B2B;">#1</p>
-              <p class="text-sm leading-relaxed px-2" style="color: #9CA3AF;">Australia has one of the highest rates of skin cancer in the world</p>
-              <p class="text-xs" style="color: #4b5563;">cancer.org.au</p>
+            <div class="space-y-1 px-3">
+              <p class="text-3xl sm:text-4xl font-black leading-none" style="color: #FF6B2B;">#1</p>
+              <p class="text-[11px] leading-snug" style="color: #9CA3AF;">highest skin cancer rate globally</p>
+              <p class="text-[10px]" style="color: #374151;">cancer.org.au</p>
             </div>
           </div>
         </div>

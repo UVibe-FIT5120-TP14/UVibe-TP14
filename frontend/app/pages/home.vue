@@ -66,7 +66,7 @@ watch(geoError, (err) => {
 onMounted(() => {
   requestLocation()
   statsTimer = setInterval(() => {
-    statsIndex.value = (statsIndex.value + 1) % skinStats.length  // 5 items
+    statsIndex.value = (statsIndex.value + 1) % skinStats.length
   }, 8000)
 })
 
@@ -87,7 +87,6 @@ let statsTimer: ReturnType<typeof setInterval>
 const statsIndex = ref(0)
 const skinStats = [
   { stat: '75%',     detail: 'of UV radiation still reaches your skin on a cloudy day.',           source: 'cancer.org.au'    },
-  { stat: '10am–2pm', detail: 'is when UV is at its peak — even in winter.',                       source: 'sunsmart.com.au'  },
   { stat: '80%',     detail: 'of UV rays can reflect off sand and water directly onto your skin.', source: 'skincancer.org'   },
   { stat: 'SPF 50+', detail: 'sunscreen should be reapplied every 2 hours, not just once.',        source: 'tga.gov.au'       },
   { stat: 'A tan',   detail: 'is your skin\'s damage response — there is no such thing as a safe tan.', source: 'who.int'   },
@@ -138,11 +137,12 @@ const uvLabel = computed((): string => {
 
       <!-- LEFT: rotating skin-cancer stats widget -->
       <div class="flex items-center justify-center w-full md:w-auto order-2 md:order-1">
+        <div class="w-full max-w-xs rounded-2xl border overflow-hidden" style="background-color: #ffffff; border-color: rgba(26,26,46,0.08); min-height: 220px;">
         <Transition name="tip-fade" mode="out-in">
           <div
             :key="statsIndex"
-            class="w-full max-w-xs rounded-2xl px-5 py-5 text-center border"
-            style="background-color: #ffffff; border-color: rgba(26,26,46,0.08);"
+            class="w-full px-5 py-5 text-center flex flex-col items-center justify-center"
+            style="min-height: 220px;"
           >
             <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color: rgba(255,107,43,0.6);">Did you know?</p>
             <p class="text-3xl font-black leading-none mb-2" style="color: #FF6B2B;">{{ currentStat.stat }}</p>
@@ -157,6 +157,7 @@ const uvLabel = computed((): string => {
             </NuxtLink>
           </div>
         </Transition>
+        </div>
       </div>
 
       <!-- CENTRE: UV dial + welcome + context + stats row -->
