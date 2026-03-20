@@ -101,6 +101,19 @@ function closeClothingModal() {
 
       <div v-else class="w-full max-w-md flex flex-col gap-5">
 
+        <!-- What to Wear (avatar) -->
+        <div class="rounded-2xl p-6 shadow-sm text-center relative overflow-hidden border" style="background-color: #ffffff; border-color: rgba(26,26,46,0.08);">
+          <h2 class="text-lg font-semibold flex items-center justify-center gap-2 mb-1 relative z-10" style="color: #1A1A2E;">
+            <span class="text-xl">👕</span> What to Wear
+          </h2>
+          <p class="text-xs mb-6 relative z-10" style="color: #9CA3AF;">Tap the avatar's clothes to learn about UV protection.</p>
+
+          <InteractiveAvatar
+            :avatarOutfit="avatarOutfit"
+            @item-clicked="openClothingModal"
+          />
+        </div>
+
         <!-- UV Index card -->
         <div class="rounded-2xl p-6 text-center shadow-sm relative overflow-hidden border" style="background-color: #ffffff; border-color: rgba(26,26,46,0.08);">
           <div
@@ -154,19 +167,6 @@ function closeClothingModal() {
               <span>11+ (Extreme)</span>
             </div>
           </div>
-        </div>
-
-        <!-- What to Wear (avatar) -->
-        <div class="rounded-2xl p-6 shadow-sm text-center relative overflow-hidden border" style="background-color: #ffffff; border-color: rgba(26,26,46,0.08);">
-          <h2 class="text-lg font-semibold flex items-center justify-center gap-2 mb-1 relative z-10" style="color: #1A1A2E;">
-            <span class="text-xl">👕</span> What to Wear
-          </h2>
-          <p class="text-xs mb-6 relative z-10" style="color: #9CA3AF;">Tap the avatar's clothes to learn about UV protection.</p>
-
-          <InteractiveAvatar
-            :avatarOutfit="avatarOutfit"
-            @item-clicked="openClothingModal"
-          />
         </div>
 
         <!-- Sunscreen Dosage -->
