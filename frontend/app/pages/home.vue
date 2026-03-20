@@ -66,7 +66,7 @@ watch(geoError, (err) => {
 onMounted(() => {
   requestLocation()
   statsTimer = setInterval(() => {
-    statsIndex.value = (statsIndex.value + 1) % skinStats.length
+    statsIndex.value = (statsIndex.value + 1) % skinStats.length  // 5 items
   }, 8000)
 })
 
@@ -86,9 +86,11 @@ const greeting = computed(() => {
 let statsTimer: ReturnType<typeof setInterval>
 const statsIndex = ref(0)
 const skinStats = [
-  { stat: '2 in 3', detail: 'Australians will be diagnosed with skin cancer by age 70.',           source: 'sunsmart.com.au' },
-  { stat: '99%',    detail: 'of non-melanoma skin cancers are caused by UV radiation.',             source: 'aihw.gov.au'     },
-  { stat: '#1',     detail: 'Australia has one of the highest skin cancer rates in the world.',     source: 'cancer.org.au'   },
+  { stat: '75%',     detail: 'of UV radiation still reaches your skin on a cloudy day.',           source: 'cancer.org.au'    },
+  { stat: '10am–2pm', detail: 'is when UV is at its peak — even in winter.',                       source: 'sunsmart.com.au'  },
+  { stat: '80%',     detail: 'of UV rays can reflect off sand and water directly onto your skin.', source: 'skincancer.org'   },
+  { stat: 'SPF 50+', detail: 'sunscreen should be reapplied every 2 hours, not just once.',        source: 'tga.gov.au'       },
+  { stat: 'A tan',   detail: 'is your skin\'s damage response — there is no such thing as a safe tan.', source: 'who.int'   },
 ]
 const currentStat = computed(() => skinStats[statsIndex.value])
 
@@ -186,17 +188,11 @@ const uvLabel = computed((): string => {
         </div>
 
         <!-- Quick stats row -->
-        <div class="flex gap-6 text-center">
+        <div class="flex gap-8 text-center">
           <div class="flex flex-col items-center gap-1">
             <span class="text-xs tracking-wide uppercase" style="color: #9CA3AF;">Peak Today</span>
             <span class="font-semibold" style="color: #1A1A2E;">{{ peakUV ?? '—' }}</span>
             <span class="text-xs" style="color: #6B7280;">{{ peakWindow ?? 'No data' }}</span>
-          </div>
-          <div class="w-px" style="background-color: rgba(26,26,46,0.1);" />
-          <div class="flex flex-col items-center gap-1">
-            <span class="text-xs tracking-wide uppercase" style="color: #9CA3AF;">Now</span>
-            <span class="font-semibold" style="color: #1A1A2E;">{{ uvValue }}</span>
-            <span class="text-xs" :style="{ color: uvColor }">{{ uvLabel }}</span>
           </div>
           <div class="w-px" style="background-color: rgba(26,26,46,0.1);" />
           <div class="flex flex-col items-center gap-1">

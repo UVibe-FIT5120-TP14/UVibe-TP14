@@ -168,10 +168,42 @@ const previewOutfit = {
           <span style="color: #FF6B2B;">The sun doesn't always<br class="hidden sm:block"> love us back.</span>
         </h1>
 
-        <!-- Subheading -->
-        <p class="text-lg sm:text-xl max-w-xl mx-auto leading-relaxed" style="color: #6B7280;">
-          We have some of the highest UV levels on Earth — and one of the highest skin cancer rates to match. UVibe helps young Australians stay protected every day.
-        </p>
+        <!-- Stats widget (inline with hero) -->
+        <div
+          class="relative rounded-3xl px-8 py-10 md:px-12 md:py-12 overflow-hidden text-left"
+          style="background: linear-gradient(135deg, #1A1A2E 0%, #2d1f3d 100%);"
+        >
+          <div
+            class="pointer-events-none absolute inset-0 opacity-10"
+            style="background-image: radial-gradient(circle, #FF6B2B 1px, transparent 1px); background-size: 28px 28px;"
+          />
+          <div
+            class="pointer-events-none absolute -top-16 right-1/3 w-64 h-64 rounded-full blur-3xl"
+            style="background: radial-gradient(circle, rgba(255,209,102,0.2) 0%, transparent 70%);"
+          />
+          <p class="relative text-center text-xs font-bold tracking-[0.2em] uppercase mb-8" style="color: #FF6B2B;">
+            Why UV Matters
+          </p>
+          <div class="relative grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6 text-center">
+            <div class="space-y-2">
+              <p class="text-5xl sm:text-6xl font-black leading-none" style="color: #FF6B2B;">2 in 3</p>
+              <p class="text-sm leading-relaxed px-2" style="color: #9CA3AF;">Australians will be diagnosed with skin cancer by age 70</p>
+              <p class="text-xs" style="color: #4b5563;">sunsmart.com.au</p>
+            </div>
+            <div class="relative space-y-2">
+              <div class="hidden sm:block absolute -left-3 top-0 bottom-0 w-px" style="background-color: rgba(255,255,255,0.06);" />
+              <div class="hidden sm:block absolute -right-3 top-0 bottom-0 w-px" style="background-color: rgba(255,255,255,0.06);" />
+              <p class="text-5xl sm:text-6xl font-black leading-none" style="color: #FF6B2B;">99%</p>
+              <p class="text-sm leading-relaxed px-2" style="color: #9CA3AF;">of non-melanoma skin cancers are caused by UV radiation</p>
+              <p class="text-xs" style="color: #4b5563;">aihw.gov.au</p>
+            </div>
+            <div class="space-y-2">
+              <p class="text-5xl sm:text-6xl font-black leading-none" style="color: #FF6B2B;">#1</p>
+              <p class="text-sm leading-relaxed px-2" style="color: #9CA3AF;">Australia has one of the highest rates of skin cancer in the world</p>
+              <p class="text-xs" style="color: #4b5563;">cancer.org.au</p>
+            </div>
+          </div>
+        </div>
 
         <!-- CTA buttons -->
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
@@ -194,52 +226,12 @@ const previewOutfit = {
     </section>
 
     <!-- ═══════════════════════════════════════
-         STATS STRIP (inline with hero)
+         SUBTITLE STRIP
     ═══════════════════════════════════════ -->
-    <section class="px-5 sm:px-10 pb-20 max-w-5xl mx-auto">
-      <div
-        class="relative rounded-3xl px-8 py-12 md:px-14 md:py-14 overflow-hidden"
-        style="background: linear-gradient(135deg, #1A1A2E 0%, #2d1f3d 100%);"
-      >
-        <!-- Warm dot grid -->
-        <div
-          class="pointer-events-none absolute inset-0 opacity-10"
-          style="background-image: radial-gradient(circle, #FF6B2B 1px, transparent 1px); background-size: 28px 28px;"
-        />
-        <!-- Sun glow -->
-        <div
-          class="pointer-events-none absolute -top-16 right-1/3 w-64 h-64 rounded-full blur-3xl"
-          style="background: radial-gradient(circle, rgba(255,209,102,0.2) 0%, transparent 70%);"
-        />
-
-        <p class="relative text-center text-xs font-bold tracking-[0.2em] uppercase mb-10" style="color: #FF6B2B;">
-          Why UV Matters
-        </p>
-
-        <div class="relative grid grid-cols-1 sm:grid-cols-3 gap-10 sm:gap-6 text-center">
-
-          <div class="space-y-2">
-            <p class="text-5xl sm:text-6xl font-black leading-none" style="color: #FF6B2B;">2 in 3</p>
-            <p class="text-sm leading-relaxed px-2" style="color: #9CA3AF;">Australians will be diagnosed with skin cancer by age 70</p>
-            <p class="text-xs" style="color: #4b5563;">sunsmart.com.au</p>
-          </div>
-
-          <div class="relative space-y-2">
-            <div class="hidden sm:block absolute -left-3 top-0 bottom-0 w-px" style="background-color: rgba(255,255,255,0.06);" />
-            <div class="hidden sm:block absolute -right-3 top-0 bottom-0 w-px" style="background-color: rgba(255,255,255,0.06);" />
-            <p class="text-5xl sm:text-6xl font-black leading-none" style="color: #FF6B2B;">99%</p>
-            <p class="text-sm leading-relaxed px-2" style="color: #9CA3AF;">of non-melanoma skin cancers are caused by UV radiation</p>
-            <p class="text-xs" style="color: #4b5563;">aihw.gov.au</p>
-          </div>
-
-          <div class="space-y-2">
-            <p class="text-5xl sm:text-6xl font-black leading-none" style="color: #FF6B2B;">#1</p>
-            <p class="text-sm leading-relaxed px-2" style="color: #9CA3AF;">Australia has one of the highest rates of skin cancer in the world</p>
-            <p class="text-xs" style="color: #4b5563;">cancer.org.au</p>
-          </div>
-
-        </div>
-      </div>
+    <section class="px-5 sm:px-10 pb-16 max-w-3xl mx-auto text-center">
+      <p class="text-lg sm:text-xl leading-relaxed" style="color: #6B7280;">
+        We have some of the highest UV levels on Earth — and one of the highest skin cancer rates to match. UVibe helps young Australians stay protected every day.
+      </p>
     </section>
 
     <!-- ═══════════════════════════════════════
